@@ -134,7 +134,7 @@ function renderConversation() {
       escape(current().title) +
       "</div>" +
       current().messages.map(messageHtml).join("")
-    : `<section class="welcome"><div class="welcome-identity"><button type="button" class="welcome-avatar" id="welcome-avatar" aria-label="切换头像版本"></button><div class="welcome-copy"><h1>GAIP Agent 助手</h1><p class="welcome-intro">我能帮到您自动化 AI 处理方案</p></div></div><img class="suggestion-heading-image" src="./assets/suggest-title.svg" alt="你可以这样问"><div class="suggestion-list">${["帮我做一份兼顾子女教育和全球通行的身份规划方案", "查一款适合香港高净值客户、偏稳健、兼顾传承的保险产品"].map((text) => `<button class="suggestion" data-draft="${escape(text)}"><img src="./assets/suggest-arrow.svg" alt=""><span class="label">${escape(text)}</span></button>`).join("")}</div></section>`;
+    : `<section class="welcome"><div class="welcome-identity"><button type="button" class="welcome-avatar" id="welcome-avatar" aria-label="切换头像版本"></button><div class="welcome-copy"><h1>GAIP Agent 助手</h1><p class="welcome-intro">我能帮到您自动化 AI 处理方案</p></div></div><h2 class="suggestion-heading-animated">你可以这样问</h2><div class="suggestion-list">${["帮我做一份兼顾子女教育和全球通行的身份规划方案", "查一款适合香港高净值客户、偏稳健、兼顾传承的保险产品"].map((text) => `<button class="suggestion" data-draft="${escape(text)}"><img src="./assets/suggest-arrow.svg" alt=""><span class="label">${escape(text)}</span></button>`).join("")}</div></section>`;
   const orbHost = $("welcome-avatar");
   if (orbHost) welcomeOrb = new WelcomeAvatar(orbHost, storage);
 }

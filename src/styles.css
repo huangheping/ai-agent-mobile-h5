@@ -1606,10 +1606,36 @@ dialog::backdrop {
   font-size: 13px;
   color: #717a7d;
 }
-.suggestion-heading-image {
-  width: 144px;
-  height: auto;
+.suggestion-heading-animated {
+  width: fit-content;
+  max-width: 100%;
   margin: 38px 0 18px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: #0bacbe;
+}
+/* Animate the heading itself rather than an externally loaded SVG timeline.
+   Each half repeats the Web palette so the loop joins without a pause or jump. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .suggestion-heading-animated {
+    background-image: linear-gradient(90deg,
+      #0bacbe 0%, #25b8d8 9%, #6382ff 19%, #fbb08e 30%,
+      #6382ff 39%, #0bacbe 50%, #25b8d8 59%, #6382ff 69%,
+      #fbb08e 80%, #6382ff 89%, #0bacbe 100%);
+    background-size: 200% 100%;
+    background-position: 0% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: suggestion-color-flow 6s linear infinite;
+  }
+}
+@keyframes suggestion-color-flow {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
 }
 .suggestion {
   border: 1px solid transparent;
@@ -1783,7 +1809,7 @@ dialog::backdrop {
     margin: 6px 0;
     font-size: 20px;
   }
-  .suggestion-heading-image {
+  .suggestion-heading-animated {
     margin-top: 24px;
   }
 }
