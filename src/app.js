@@ -15,6 +15,7 @@ import {
   interruptProcess,
 } from "./process.js";
 import { initVoice } from "./voice.js?v=14";
+import { initAccountMenu } from "./account.js?v=15";
 import { WelcomeAvatar } from "./welcome-avatar.js";
 
 let welcomeOrb = null;
@@ -570,3 +571,5 @@ initHistoryActions({
       type === "rename" ? "会话名称已保存" : "会话已删除";
   },
 });
+
+initAccountMenu();

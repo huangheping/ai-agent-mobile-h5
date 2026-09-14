@@ -2726,3 +2726,87 @@ dialog::backdrop {
 .voice-button img { pointer-events: none; }
 .selected-plan button img { pointer-events: none; }
 .selected-plan button img { width: 24px; height: 24px; }
+
+/* Account entry stays outside the independently scrolling history list. */
+.history-list { min-height: 0; overscroll-behavior: contain; }
+.drawer-account {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid #e9eaec;
+  background: #fbfbfb;
+}
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #2f3640;
+  text-align: left;
+  background: #f0f1f3;
+}
+.account-trigger[aria-expanded="true"] { background: #e9ebee; }
+.account-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #005d56;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+.account-trigger-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.account-chevron { width: 7px; height: 7px; border-left: 1.5px solid currentColor; border-top: 1.5px solid currentColor; transform: rotate(45deg); margin: 5px 4px 0; color: #727880; }
+.account-trigger[aria-expanded="true"] .account-chevron { transform: rotate(225deg); margin-top: -3px; }
+.account-chevron.right { transform: rotate(135deg); margin: 0 4px; }
+.account-popover {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 8px);
+  left: 12px;
+  right: 12px;
+  max-height: calc(100dvh - 170px - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border: 1px solid #e1e3e7;
+  border-radius: 18px;
+  background: #fff;
+  color: #2f3640;
+  box-shadow: 0 8px 32px #2f36401c, 0 2px 6px #2f364008;
+  transform-origin: bottom left;
+  animation: account-popover-in 160ms ease-out;
+}
+.account-summary { display: flex; align-items: center; gap: 10px; margin: 0 4px 4px; padding: 10px 4px 14px; border-bottom: 1px solid #eceef0; }
+.account-summary strong { display: block; font-size: 15px; font-weight: 600; }
+.account-summary small { display: block; font-size: 11px; color: #858b92; margin-top: 3px; }
+.account-action { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 9px; font-size: 14px; color: #2f3640; text-align: left; }
+.account-action img { width: 18px; height: 18px; flex: 0 0 18px; pointer-events: none; }
+.account-action span:not(.account-chevron) { flex: 1; }
+.account-action:active, .account-back:active { background: #f1f2f4; }
+.account-details { padding: 0 12px; margin: 2px 0 6px; }
+.account-details > div { display: flex; align-items: flex-start; gap: 14px; padding: 10px 0; font-size: 12px; line-height: 18px; }
+.account-details dt { flex: none; color: #727880; }
+.account-details dd { flex: 1; text-align: right; margin: 0; overflow-wrap: anywhere; }
+.account-logout { border-top: 1px solid #eceef0; border-radius: 0 0 9px 9px; }
+.account-note { margin: 4px 10px 8px; color: #727880; font-size: 12px; line-height: 19px; }
+.account-back { display: flex; gap: 8px; align-items: center; min-height: 40px; padding: 4px 10px; color: #727880; font-size: 12px; border-radius: 8px; }
+.account-back span { font-size: 24px; }
+#account-install-guide h3 { margin: 8px 12px; font-size: 17px; line-height: 24px; }
+.install-guide-intro { margin: 0 12px; font-size: 12px; line-height: 20px; color: #727880; }
+.install-guide-steps { padding-left: 28px; margin: 14px 12px; font-size: 13px; line-height: 21px; }
+.install-guide-steps li { padding-left: 3px; margin: 9px 0; }
+.account-install-primary { display: block; margin: 14px 10px 10px; width: calc(100% - 20px); min-height: 42px; padding: 8px 12px; color: #fff; background: #2f3640; font-size: 13px; border-radius: 10px; }
+@keyframes account-popover-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .account-popover { animation: none; } }
+.account-popover button:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

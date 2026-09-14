@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=14" />
+    <link rel="stylesheet" href="./src/styles.css?v=15" />
   </head>
   <body>
     <main class="app" id="app">
@@ -197,7 +197,28 @@
       </button>
       <div class="section-label">历史对话</div>
       <div id="history-list" class="history-list"></div>
-      <p class="drawer-note">演示会话保存在当前浏览器</p>
+      <div class="drawer-account" id="drawer-account">
+        <section class="account-popover" id="account-popover" aria-label="账号信息" hidden>
+          <div id="account-overview">
+            <div class="account-summary"><span class="account-avatar" aria-hidden="true">梁</span><div><strong>梁康</strong><small>演示账号</small></div></div>
+            <button class="account-action" id="account-install"><img src="./assets/add-to-home.svg" alt="" draggable="false"><span>添加到桌面</span><span class="account-chevron right" aria-hidden="true"></span></button>
+            <dl class="account-details"><div><dt>域账号</dt><dd>lik18635</dd></div><div><dt>团队</dt><dd>上海精英一队</dd></div><div><dt>版本</dt><dd>0.1.0</dd></div></dl>
+            <button class="account-action account-logout" id="account-logout"><img src="./assets/log-out.svg" alt="" draggable="false"><span>退出登录</span></button>
+            <p class="account-note" id="account-note" role="status" hidden></p>
+          </div>
+          <div id="account-install-guide" hidden>
+            <button class="account-back" id="account-back"><span aria-hidden="true">‹</span>返回</button>
+            <h3 id="install-guide-title">添加到桌面</h3>
+            <p class="install-guide-intro" id="install-guide-intro"></p>
+            <ol class="install-guide-steps" id="install-guide-steps"></ol>
+            <button class="account-install-primary" id="install-guide-action">复制链接</button>
+            <p class="account-note" id="install-guide-status" role="status" hidden></p>
+          </div>
+        </section>
+        <button class="account-trigger" id="account-trigger" aria-expanded="false" aria-controls="account-popover">
+          <span class="account-avatar" aria-hidden="true">梁</span><span class="account-trigger-name">梁康</span><span class="account-chevron" aria-hidden="true"></span>
+        </button>
+      </div>
     </dialog>
 
     <dialog
@@ -319,6 +340,6 @@
       <div id="full-table" class="full-table"></div>
       <div class="table-bottom">对比项目固定在左侧 · 示例数据，仅用于展示</div>
     </dialog>
-    <script type="module" src="./src/app.js?v=14"></script>
+    <script type="module" src="./src/app.js?v=15"></script>
   </body>
 </html>
