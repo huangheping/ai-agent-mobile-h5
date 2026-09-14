@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=13" />
+    <link rel="stylesheet" href="./src/styles.css?v=14" />
   </head>
   <body>
     <main class="app" id="app">
@@ -45,7 +45,7 @@
             ><span id="voice-caption">正在聆听</span
             ><span class="voice-demo-label" id="voice-demo-label">演示</span>
           </div>
-          <h2 id="voice-title">我在听，慢慢说。</h2>
+          <h2 id="voice-title">松手后为您转文字</h2>
           <p id="voice-hint">松开转文字 · 上移取消</p>
           <div class="voice-visual" id="voice-visual">
             <div class="voice-aura"></div>
@@ -55,7 +55,7 @@
             </div>
           </div>
           <div class="voice-status" id="voice-status" role="status">
-            上移取消 · 移回继续
+            上移取消
           </div>
         </div>
       </section>
@@ -111,7 +111,7 @@
                 id="voice-button"
                 aria-label="长按语音按钮说话，松开转文字"
               >
-                <img src="./assets/mic.svg" alt="" /><span
+                <img src="./assets/mic.svg" alt="" draggable="false" /><span
                   id="voice-main-label"
                   class="sr-only"
                   >长按说话</span
@@ -319,6 +319,6 @@
       <div id="full-table" class="full-table"></div>
       <div class="table-bottom">对比项目固定在左侧 · 示例数据，仅用于展示</div>
     </dialog>
-    <script type="module" src="./src/app.js?v=13"></script>
+    <script type="module" src="./src/app.js?v=14"></script>
   </body>
 </html>

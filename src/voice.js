@@ -165,9 +165,6 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
       else finish();
       return;
     }
-    if (elapsed >= 50 && !scene.classList.contains("cancel-ready"))
-      $("voice-status").textContent =
-        `还可以说 ${Math.ceil(60 - elapsed)} 秒，松开即可转文字`;
     raf = requestAnimationFrame(paint);
   }
   function begin() {
@@ -175,9 +172,9 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     started = lastFrame = performance.now();
     text(
       demo ? "语音反馈演示" : "正在聆听",
-      "我在听，慢慢说。",
+      "松手后为您转文字",
       "松开后，为你转换成文字",
-      "上移取消 · 移回原位继续说话",
+      "上移取消",
     );
     raf = requestAnimationFrame(paint);
   }
@@ -309,9 +306,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
       demo ? "转写流程演示" : "语音采集完成",
       demo ? "正在转换成文字…" : "正在准备转写…",
       "转换后可修改，确认后再发送",
-      demo
-        ? "正在演示转换过程，不代表实际识别"
-        : "语音仅在当前页面处理，不上传",
+      "",
     );
     if (demo) {
       const attempt = token;
@@ -353,7 +348,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     $("voice-caption").textContent =
       progress >= 1 ? "松开即可取消" : demo ? "语音反馈演示" : "正在聆听";
     $("voice-title").textContent =
-      progress >= 1 ? "松开，取消这段话。" : "我在听，慢慢说。";
+      progress >= 1 ? "松手取消" : "松手后为您转文字";
     $("voice-main-label").textContent =
       progress >= 1 ? "松开取消" : "松开转文字";
     control.setAttribute(
@@ -363,7 +358,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     $("voice-hint").textContent =
       progress >= 1 ? "松开后，这段语音不会转写" : "松开后，为你转换成文字";
     $("voice-status").textContent =
-      progress >= 1 ? "移回原位，还可以继续说话" : "上移取消 · 松开后转文字";
+      progress >= 1 ? "移回继续说话" : "上移取消";
   }
   function release(id) {
     if (!gesture || gesture.id !== id) return;
@@ -408,7 +403,14 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     if (gesture) reset("语音输入已中断，本段内容已取消");
   });
   document.addEventListener("pointercancel", abortIfPending);
-  control.addEventListener("contextmenu", (event) => event.preventDefault());
+  // Keep the press on the button: Safari must not drag/open the nested image.
+  control.querySelector("img").draggable = false;
+  for (const type of ["dragstart", "contextmenu", "selectstart"]) {
+    control.addEventListener(type, (event) => event.preventDefault());
+  }
+  for (const type of ["touchstart", "touchmove"]) {
+    control.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+  }
   control.addEventListener("keydown", (event) => {
     if ([" ", "Enter"].includes(event.key) && !event.repeat) {
       event.preventDefault();
@@ -427,8 +429,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   });
   document.addEventListener("touchend", (event) => {
     if (!gesture) return;
-    if (!event.target || !(event.target instanceof HTMLElement)) return;
-    if (event.target.closest("button") && event.target.closest("button").id === "voice-button") return;
+    if (event.target && control.contains(event.target)) return;
     abortIfPending();
   });
   document.addEventListener("visibilitychange", () => {

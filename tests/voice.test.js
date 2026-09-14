@@ -139,3 +139,26 @@ test("授权等待期间已经松开，授权成功后不自动开始采集", as
   win.dispatchEvent(new win.Event("pagehide"));
   dom.window.close();
 });
+
+test("长按图标不会启动原生拖拽或菜单，手势仍可上移取消", () => {
+  const { $, win, dom, pointer, clock, confirmed } = setup();
+  pointer("pointerdown");
+  const icon = $("voice-button").querySelector("img");
+  assert.equal(icon.draggable, false);
+  for (const type of ["dragstart", "contextmenu", "touchstart", "touchmove"]) {
+    const event = new win.Event(type, { bubbles: true, cancelable: true });
+    icon.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, true);
+  }
+  assert.equal($("voice-scene").dataset.state, "recording");
+  assert.equal($("voice-title").textContent, "松手后为您转文字");
+  assert.equal($("voice-status").textContent, "上移取消");
+  clock.value = 1500;
+  pointer("pointermove", 400);
+  assert.equal($("voice-title").textContent, "松手取消");
+  pointer("pointerup", 400);
+  assert.equal($("voice-feedback").hidden, true);
+  assert.equal(confirmed.length, 0);
+  win.dispatchEvent(new win.Event("pagehide"));
+  dom.window.close();
+});

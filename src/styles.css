@@ -496,10 +496,10 @@ p {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: #f0f6f3;
-  border: 1px solid #e4eee8;
+  background: #f5f6f8;
+  border: 1px solid #f5f6f8;
   border-radius: 9px;
-  color: var(--green);
+  color: #2f3640;
   padding: 2px 7px 2px 10px;
   font-size: 12px;
 }
@@ -515,6 +515,9 @@ p {
   white-space: nowrap;
 }
 .selected-plan button {
+  display: grid;
+  place-items: center;
+  color: #2f3640;
   width: 34px;
   height: 34px;
   font-size: 20px;
@@ -1728,7 +1731,8 @@ dialog::backdrop {
   color: #717a7d;
 }
 .voice-button {
-  touch-action: manipulation;
+  touch-action: none;
+  -webkit-user-select: none;
   -webkit-touch-callout: none;
   user-select: none;
   transition:
@@ -2658,3 +2662,67 @@ dialog::backdrop {
     margin-top: 20px;
   }
 }
+
+/* One voice feedback surface: two prompts and a waveform. */
+.voice-feedback .voice-scene {
+  padding: 22px 20px 18px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 28px #2f36400d;
+}
+.voice-feedback .voice-caption,
+.voice-feedback .voice-timer,
+.voice-feedback #voice-hint,
+.voice-feedback .voice-aura,
+.voice-feedback .voice-visual::after {
+  display: none;
+}
+.voice-feedback .voice-scene h2 {
+  margin: 0;
+  color: #2f3640;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+.voice-feedback .voice-visual {
+  height: 64px;
+  margin: 12px auto 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+.voice-feedback .voice-wave {
+  width: 100%;
+  gap: 3px;
+  padding: 0;
+}
+.voice-feedback .voice-wave i {
+  flex: 0 1 3px;
+  min-width: 2px;
+  background: #24d4c9;
+}
+.voice-feedback .voice-status {
+  min-height: 0;
+  color: #727880;
+  font-size: 12px;
+  line-height: 20px;
+}
+.voice-feedback .cancel-ready h2,
+.voice-feedback .cancel-ready .voice-status {
+  color: #b34b4b;
+}
+.voice-feedback .cancel-ready .voice-wave i { background: #d77878; }
+.voice-feedback [data-state="permission"] #voice-hint,
+.voice-feedback [data-state="error"] #voice-hint { display: block; margin-top: 8px; }
+.voice-button,
+.voice-button * {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.voice-button img { pointer-events: none; }
+.selected-plan button img { pointer-events: none; }
+.selected-plan button img { width: 24px; height: 24px; }

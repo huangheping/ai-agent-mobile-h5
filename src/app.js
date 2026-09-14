@@ -14,7 +14,7 @@ import {
   applyProcessEvent,
   interruptProcess,
 } from "./process.js";
-import { initVoice } from "./voice.js";
+import { initVoice } from "./voice.js?v=14";
 import { WelcomeAvatar } from "./welcome-avatar.js";
 
 let welcomeOrb = null;
@@ -96,7 +96,7 @@ function controls() {
   send.disabled = !active && !$("message").value.trim() && !files().length;
   const plan = planFor(current().planId);
   $("selection").innerHTML = plan
-    ? `<div class="selected-plan"><img src="./assets/plan.svg" alt=""><span>${escape(plan.name)}</span><button type="button" data-action="remove-plan" aria-label="取消所选方案">×</button></div>`
+    ? `<div class="selected-plan"><img src="./assets/agent-result.svg" alt="" draggable="false"><span>${escape(plan.name)}</span><button type="button" data-action="remove-plan" aria-label="取消所选方案"><img src="./assets/close.svg" alt="" draggable="false"></button></div>`
     : "";
   const planActive = !!plan || $("plans-dialog").open;
   $("plan-button").classList.toggle("selected", planActive);
