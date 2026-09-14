@@ -14,6 +14,7 @@
   --border: #e7ebea;
   --app-height: 100dvh;
   --app-top: 0px;
+  --focus-ring: none;
 }
 * {
   box-sizing: border-box;
@@ -35,11 +36,20 @@ button {
 button:disabled {
   cursor: default;
 }
+html[data-input-mode="keyboard"] {
+  --focus-ring: 1px solid #727880;
+}
+/* Preserve actual borders; suppress only the extra browser focus outline. */
+:where(button, a[href], input, textarea, select, [tabindex]):focus {
+  outline: none;
+}
 button:focus-visible,
+a[href]:focus-visible,
+select:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 1px solid #727880;
+  outline: var(--focus-ring);
   outline-offset: 2px;
 }
 button {
@@ -1696,7 +1706,7 @@ dialog::backdrop {
 .plan-option:focus-visible {
   outline: none;
 }
-.plan-option:focus-visible .plan-copy strong {
+html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
@@ -1956,7 +1966,7 @@ dialog::backdrop {
   border-color: #727880;
 }
 .history-edit-panel input:focus-visible {
-  outline: 1px solid #727880;
+  outline: var(--focus-ring);
   outline-offset: 2px;
 }
 .field-error {
@@ -2366,7 +2376,7 @@ dialog::backdrop {
   mask-composite: exclude;
 }
 .plan-button.selected,
-.plan-button:focus-visible,
+html[data-input-mode="keyboard"] .plan-button:focus-visible,
 .plan-button:active {
   color: #2f3640;
   border-color: transparent;
@@ -2815,7 +2825,7 @@ dialog::backdrop {
 .account-install-primary { display: block; margin: 14px 10px 10px; width: calc(100% - 20px); min-height: 42px; padding: 8px 12px; color: #fff; background: #2f3640; font-size: 13px; border-radius: 10px; }
 @keyframes account-popover-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .account-popover { animation: none; } }
-.account-popover button:focus-visible {
+html[data-input-mode="keyboard"] .account-popover button:focus-visible {
   outline: none;
   text-decoration: underline;
   text-underline-offset: 4px;

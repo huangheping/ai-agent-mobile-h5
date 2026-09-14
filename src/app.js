@@ -18,6 +18,9 @@ import {
 import { initVoice } from "./voice.js?v=14";
 import { initAccountMenu } from "./account.js?v=17";
 import { WelcomeAvatar } from "./welcome-avatar.js";
+import { initFocusMode } from "./focus.js?v=23";
+
+initFocusMode();
 
 let welcomeOrb = null;
 
