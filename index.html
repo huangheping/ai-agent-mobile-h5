@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=6" />
+    <link rel="stylesheet" href="./src/styles.css?v=10" />
   </head>
   <body>
     <main class="app" id="app">
@@ -80,21 +80,41 @@
               >
                 <img src="./assets/attach.svg" alt="" />
               </button>
-              <button type="button" class="plan-button" id="plan-button">
-                <img src="./assets/plan.svg" alt="" />做方案
-              </button>
+              <div class="plan-control" id="plan-control">
+                <button
+                  type="button"
+                  class="plan-button"
+                  id="plan-button"
+                  aria-haspopup="dialog"
+                  aria-controls="plans-dialog"
+                  aria-expanded="false"
+                >
+                  <img src="./assets/plan.svg" alt="" />做方案
+                </button>
+                <button
+                  type="button"
+                  class="plan-clear"
+                  id="plan-clear"
+                  data-action="remove-plan"
+                  aria-label="退出做方案"
+                  hidden
+                >
+                  <img src="./assets/close.svg" alt="" />
+                </button>
+              </div>
             </div>
             <div class="tool-group composer-right">
+              <span class="voice-hold-hint" aria-hidden="true">长按说话</span>
               <button
                 type="button"
                 class="icon-button voice-button"
                 id="voice-button"
-                aria-label="按住说话，松开转文字"
+                aria-label="长按语音按钮说话，松开转文字"
               >
                 <img src="./assets/mic.svg" alt="" /><span
                   id="voice-main-label"
                   class="sr-only"
-                  >按住说话</span
+                  >长按说话</span
                 >
               </button>
               <button
@@ -109,7 +129,16 @@
             </div>
           </div>
         </form>
-        <p class="disclaimer">AI 内容仅供参考，对客使用前请核实</p>
+        <p class="disclaimer">
+          您正在与 AI（非真人）进行对话，AI 生成内容未必准确。<button
+            type="button"
+            id="ai-notice-trigger"
+            aria-haspopup="dialog"
+            aria-controls="ai-notice-dialog"
+          >
+            点击查看详情
+          </button>
+        </p>
       </footer>
       <div class="toast" id="toast" role="status" hidden></div>
       <div
@@ -120,22 +149,40 @@
       ></div>
     </main>
 
+    <dialog
+      id="ai-notice-dialog"
+      class="ai-notice-dialog"
+      aria-labelledby="ai-notice-title"
+      aria-describedby="ai-notice-warning"
+    >
+      <div class="ai-notice-body">
+        <h2 id="ai-notice-title" tabindex="-1" autofocus>重要提示</h2>
+        <p class="ai-notice-subtitle">请阅读并确认以下 Al 内容使用声明</p>
+        <p class="ai-notice-warning" id="ai-notice-warning">
+          Al 生成内容可能存在偏差，仅供参考，不构成投资、保险或财务建议。
+        </p>
+        <div class="ai-notice-copy">
+          内容借助AI工具整理生成，可能存在偏差，仅供参考，不构成对于任何投资、保险、金融产品或财务安排之招揽、邀约或任何建议。本公司不就使用此AI内容或其所载的任何言论、意见或预测而导致的任何直接或间接的后果或损失承担任何责任，亦不会对其分析准确性或完整性作出承诺或保证。投资者应根据个人的情况决定理财方案是否切合个人的财务需求、财政状况、负担能力、投资经验、投资目标，及承受风险能力等，不应依赖于本AI内容作任何投保、投资或理财决定。金融产品涉及风险，如有疑问，请咨询专家的意见。持牌经纪人或顾问须复核AI所生成的内容。本内容只供于其分发、传递为合法的国家、地域分发、传递。本内容并非向禁止本文件的任何国家、地域的任何人士（因其国籍、居民身份或其他原因）发出。
+        </div>
+        <button type="button" class="ai-notice-confirm close-dialog">
+          我已了解并同意
+        </button>
+      </div>
+    </dialog>
+
     <dialog id="plans-dialog" class="sheet" aria-labelledby="plans-title">
       <div class="handle"></div>
       <header class="dialog-header">
         <div>
           <h2 id="plans-title">选择方案</h2>
-          <p>选择后，在对话中补充需求即可</p>
         </div>
         <button class="icon-button close-dialog" aria-label="关闭方案选择">
           <img src="./assets/close.svg" alt="" />
         </button>
       </header>
       <div class="sheet-content">
-        <div class="section-label">方案与分析</div>
         <div id="plan-list"></div>
       </div>
-      <div class="sheet-footer">一次专注一个方案，随时可以切换</div>
     </dialog>
 
     <dialog id="history-dialog" class="drawer" aria-labelledby="history-title">
@@ -169,7 +216,7 @@
           <img src="./assets/close.svg" alt="" />
         </button>
       </header>
-      <p id="history-action-name" class="history-action-name"></p>
+      <p id="history-action-name" class="sr-only"></p>
       <div id="history-actions-menu" class="history-actions-menu">
         <button id="history-rename">
           <img src="./assets/edit.svg" alt="" /><span>编辑名称</span>
@@ -272,6 +319,6 @@
       <div id="full-table" class="full-table"></div>
       <div class="table-bottom">对比项目固定在左侧 · 示例数据，仅用于展示</div>
     </dialog>
-    <script type="module" src="./src/app.js?v=6"></script>
+    <script type="module" src="./src/app.js?v=10"></script>
   </body>
 </html>

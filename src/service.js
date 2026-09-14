@@ -1,4 +1,4 @@
-import { createReply, plans } from "./data.js";
+import { createReply, plans } from "./data.js?v=10";
 
 function delay(ms, signal) {
   return new Promise((resolve, reject) => {

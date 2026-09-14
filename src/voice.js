@@ -55,7 +55,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
           ? "等待麦克风…"
           : next === "processing"
             ? "正在转文字…"
-            : "按住说话";
+            : "长按说话";
     $("voice-main-label").textContent = label;
     control.setAttribute("aria-label", label);
     control.querySelector("img").src = "./assets/mic.svg";
@@ -82,11 +82,26 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     if (recorder?.state === "recording") recorder.stop();
     recorder = null;
     stopTracks();
+    releaseCapture();
     gesture = null;
     drag = position = velocity = 0;
     $("voice-visual").style.transform = "";
     scene.style.setProperty("--cancel-progress", 0);
     scene.classList.remove("cancel-ready");
+  }
+
+  function releaseCapture() {
+    if (!gesture) return;
+    try {
+      control.releasePointerCapture(gesture.id);
+    } catch {
+      // ignore if pointer was never captured
+    }
+  }
+
+  function abortIfPending() {
+    if (!gesture) return;
+    reset("语音输入已中断，本段内容已取消");
   }
   function reset(message) {
     cleanup();
@@ -352,6 +367,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   }
   function release(id) {
     if (!gesture || gesture.id !== id) return;
+    releaseCapture();
     const outcome = gestureOutcome({
       duration: performance.now() - gesture.time,
       dy: gesture.dy,
@@ -368,23 +384,30 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
       return;
     }
     if (outcome === "cancel") reset("已取消，这段语音不会转写或发送");
-    else if (outcome === "short") reset("说话时间太短，请按住多说一点");
+    else if (outcome === "short")
+      reset("请长按语音按钮说话，松开即转文字");
     else finish();
   }
 
   control.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || event.isPrimary === false || gesture) return;
     event.preventDefault();
-    control.setPointerCapture(event.pointerId);
+    try {
+      control.setPointerCapture(event.pointerId);
+    } catch {}
     press(event.pointerId, event.clientY);
   });
   control.addEventListener("pointermove", (event) =>
     move(event.pointerId, event.clientY),
   );
   control.addEventListener("pointerup", (event) => release(event.pointerId));
+  document.addEventListener("pointerup", (event) => {
+    if (gesture && gesture.id === event.pointerId) release(event.pointerId);
+  });
   control.addEventListener("pointercancel", () => {
     if (gesture) reset("语音输入已中断，本段内容已取消");
   });
+  document.addEventListener("pointercancel", abortIfPending);
   control.addEventListener("contextmenu", (event) => event.preventDefault());
   control.addEventListener("keydown", (event) => {
     if ([" ", "Enter"].includes(event.key) && !event.repeat) {
@@ -401,6 +424,12 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   });
   control.addEventListener("click", (event) => {
     event.preventDefault();
+  });
+  document.addEventListener("touchend", (event) => {
+    if (!gesture) return;
+    if (!event.target || !(event.target instanceof HTMLElement)) return;
+    if (event.target.closest("button") && event.target.closest("button").id === "voice-button") return;
+    abortIfPending();
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && ["recording", "permission"].includes(mode))

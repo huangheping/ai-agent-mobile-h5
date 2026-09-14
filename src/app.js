@@ -1,5 +1,5 @@
-import { plans } from "./data.js";
-import { streamReply } from "./service.js";
+import { plans } from "./data.js?v=10";
+import { streamReply } from "./service.js?v=10";
 import {
   loadState,
   saveState,
@@ -15,6 +15,9 @@ import {
   interruptProcess,
 } from "./process.js";
 import { initVoice } from "./voice.js";
+import { WelcomeAvatar } from "./welcome-avatar.js";
+
+let welcomeOrb = null;
 
 const $ = (id) => document.getElementById(id);
 const escape = (value) =>
@@ -95,8 +98,14 @@ function controls() {
   $("selection").innerHTML = plan
     ? `<div class="selected-plan"><img src="./assets/plan.svg" alt=""><span>${escape(plan.name)}</span><button type="button" data-action="remove-plan" aria-label="取消所选方案">×</button></div>`
     : "";
-  $("plan-button").classList.toggle("selected", !!plan);
-  $("plan-button").setAttribute("aria-pressed", String(!!plan));
+  const planActive = !!plan || $("plans-dialog").open;
+  $("plan-button").classList.toggle("selected", planActive);
+  $("plan-control").classList.toggle("active", planActive);
+  $("plan-clear").hidden = !planActive;
+  $("plan-button").setAttribute(
+    "aria-expanded",
+    String($("plans-dialog").open),
+  );
   $("message").placeholder = plan
     ? "补充需求、预算或希望分析的问题…"
     : "有问题，随时问我…";
@@ -118,12 +127,16 @@ function messageHtml(m) {
   return `<article class="message assistant" data-message-id="${escape(m.id)}"><div class="process-host">${processHtml(m)}</div><div class="skill-host">${skillHtml(m)}</div><div class="message-content">${escape(m.text)}</div>${m.table ? `<div class="table-card"><div class="table-card-header"><strong>${escape(m.table.title)}</strong><button class="expand-table" data-table-id="${escape(m.id)}">展开表格 ↗</button></div><div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的方案对比表">${tableHtml(m.table)}</div><div class="table-hint"><span>左右 / 上下滑动 · 示例数据</span><button data-table-id="${escape(m.id)}">全屏查看 ↗</button></div></div>` : ""}${m.status === "streaming" ? '<div class="response-status"><i class="spinner"></i><span>正在整理回答…</span></div>' : m.status === "stopped" ? '<div class="response-status">已停止生成</div>' : m.status === "error" ? '<div class="response-status">回复失败，请重试</div>' : ""}${m.status !== "streaming" ? `<div class="message-actions">${m.text ? `<button class="text-button" data-copy-id="${escape(m.id)}" aria-label="复制回答"><img src="./assets/copy.svg?v=5" alt=""></button>` : ""}${["stopped", "error"].includes(m.status) ? `<button class="text-button" data-retry-id="${escape(m.id)}">重新生成</button>` : ""}</div>` : ""}${m.status === "done" && m.suggestions?.length ? `<div class="followups">${m.suggestions.map((s) => `<button data-prompt="${escape(s)}">${escape(s)}</button>`).join("")}</div>` : ""}</article>`;
 }
 function renderConversation() {
+  welcomeOrb?.destroy();
+  welcomeOrb = null;
   $("conversation-body").innerHTML = current().messages.length
     ? '<div class="conversation-heading">' +
       escape(current().title) +
       "</div>" +
       current().messages.map(messageHtml).join("")
-    : `<section class="welcome"><img class="welcome-logo" src="./assets/agent.svg" alt=""><h1>GAIP Agent 助手</h1><p class="welcome-intro">我能帮到您自动化 AI 处理方案</p><img class="suggestion-heading-image" src="./assets/suggest-title.svg" alt="你可以这样问"><div class="suggestion-list">${["帮我做一份兼顾子女教育和全球通行的身份规划方案", "查一款适合香港高净值客户、偏稳健、兼顾传承的保险产品"].map((text) => `<button class="suggestion" data-draft="${escape(text)}"><img src="./assets/suggest-arrow.svg" alt=""><span class="label">${escape(text)}</span></button>`).join("")}</div></section>`;
+    : `<section class="welcome"><div class="welcome-identity"><button type="button" class="welcome-avatar" id="welcome-avatar" aria-label="切换头像版本"></button><div class="welcome-copy"><h1>GAIP Agent 助手</h1><p class="welcome-intro">我能帮到您自动化 AI 处理方案</p></div></div><img class="suggestion-heading-image" src="./assets/suggest-title.svg" alt="你可以这样问"><div class="suggestion-list">${["帮我做一份兼顾子女教育和全球通行的身份规划方案", "查一款适合香港高净值客户、偏稳健、兼顾传承的保险产品"].map((text) => `<button class="suggestion" data-draft="${escape(text)}"><img src="./assets/suggest-arrow.svg" alt=""><span class="label">${escape(text)}</span></button>`).join("")}</div></section>`;
+  const orbHost = $("welcome-avatar");
+  if (orbHost) welcomeOrb = new WelcomeAvatar(orbHost, storage);
 }
 function render() {
   followTail = true;
@@ -164,10 +177,11 @@ function showPlans() {
   $("plan-list").innerHTML = plans
     .map(
       (p) =>
-        `<button class="plan-option ${current().planId === p.id ? "active" : ""}" data-plan-id="${p.id}" aria-pressed="${current().planId === p.id}"><img src="./assets/plan.svg" alt=""><div class="plan-copy"><strong>${escape(p.name)}</strong><p>${escape(p.description)}</p></div><span class="check">${current().planId === p.id ? "✓" : ""}</span></button>`,
+        `<button class="plan-option ${current().planId === p.id ? "active" : ""}" data-plan-id="${p.id}" aria-pressed="${current().planId === p.id}"><img src="./assets/agent-result.svg" alt=""><div class="plan-copy"><strong>${escape(p.name)}</strong><p>${escape(p.description)}</p></div><span class="check">${current().planId === p.id ? "✓" : ""}</span></button>`,
     )
     .join("");
   openDialog("plans-dialog");
+  controls();
 }
 function renderHistory() {
   const sessions = state.sessions
@@ -300,7 +314,9 @@ $("message").addEventListener("keydown", (event) => {
     send();
   }
 });
+$("ai-notice-trigger").onclick = () => openDialog("ai-notice-dialog");
 $("plan-button").onclick = showPlans;
+$("plans-dialog").addEventListener("close", controls);
 $("history-button").onclick = showHistory;
 $("new-button").onclick = startNew;
 $("drawer-new").onclick = startNew;
@@ -388,9 +404,12 @@ document.addEventListener("click", async (event) => {
     $("announcement").textContent = "已选择" + planFor(current().planId).name;
   }
   if (button.dataset.action === "remove-plan") {
+    $("plans-dialog").close();
     current().planId = null;
     persist();
     controls();
+    $("plan-button").focus({ preventScroll: true });
+    $("announcement").textContent = "已退出做方案";
   }
   if (button.dataset.draft) {
     $("message").value = button.dataset.draft;

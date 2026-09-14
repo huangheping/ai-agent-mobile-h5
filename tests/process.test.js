@@ -33,7 +33,7 @@ test("方案技能有明确调用事件；阶段更新保留手动展开状态�
     if (e.type === "process") m.process.expanded = false;
   }
   assert.equal(m.skill.id, "hongkong-fna");
-  assert.match(skillHtml(m), /香港保险配置方案/);
+  assert.match(skillHtml(m), /香港保险FNA问卷生成与产品配置方案/);
   assert.equal(m.process.steps.length, 3);
   assert.equal(m.process.expanded, false);
   applyProcessEvent(m, {
