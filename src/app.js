@@ -15,7 +15,7 @@ import {
   interruptProcess,
 } from "./process.js";
 import { initVoice } from "./voice.js?v=14";
-import { initAccountMenu } from "./account.js?v=15";
+import { initAccountMenu } from "./account.js?v=17";
 import { WelcomeAvatar } from "./welcome-avatar.js";
 
 let welcomeOrb = null;

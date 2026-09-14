@@ -27,16 +27,25 @@ export function installGuideFor({ userAgent = "", platform = "", maxTouchPoints 
 export function initAccountMenu() {
   const $ = (id) => document.getElementById(id);
   const drawer = $("history-dialog"), root = $("drawer-account"), panel = $("account-popover"), trigger = $("account-trigger");
-  let deferredPrompt = null, installed = false;
+  let deferredPrompt = null, installed = false, feedbackTimer, actionAttempt = 0;
   const standalone = matchMedia("(display-mode: standalone)");
   function updateInstall() {
     $("account-install").hidden = installed || standalone.matches || window.navigator.standalone === true;
   }
+  function resetCopyFeedback() {
+    clearTimeout(feedbackTimer);
+    actionAttempt++;
+    $("install-guide-action").disabled = false;
+    $("install-guide-action").textContent = deferredPrompt ? "添加到桌面" : "复制链接";
+    $("install-guide-status").hidden = true;
+  }
   function viewGuide(show) {
+    resetCopyFeedback();
     $("account-overview").hidden = show;
     $("account-install-guide").hidden = !show;
   }
   function close(restoreFocus = false) {
+    resetCopyFeedback();
     panel.hidden = true;
     trigger.setAttribute("aria-expanded", "false");
     if (restoreFocus) trigger.focus({ preventScroll: true });
@@ -81,12 +90,16 @@ export function initAccountMenu() {
   };
   $("install-guide-action").onclick = async () => {
     const action = $("install-guide-action"), status = $("install-guide-status");
+    clearTimeout(feedbackTimer);
+    const attempt = ++actionAttempt;
+    status.hidden = true;
     action.disabled = true;
     try {
       if (deferredPrompt) {
         const event = deferredPrompt; deferredPrompt = null;
         await event.prompt();
         const result = await event.userChoice;
+        if (attempt !== actionAttempt) return;
         if (result.outcome === "accepted") {
           $("account-install").hidden = true; close(true);
         } else {
@@ -96,11 +109,17 @@ export function initAccountMenu() {
       } else {
         const url = new URL(location.href); url.search = ""; url.hash = "";
         await navigator.clipboard.writeText(url.href);
-        status.textContent = "链接已复制"; status.hidden = false;
+        if (attempt !== actionAttempt) return;
+        action.textContent = "链接已复制";
+        feedbackTimer = setTimeout(() => {
+          if (attempt === actionAttempt) action.textContent = "复制链接";
+        }, 2000);
       }
     } catch {
+      if (attempt !== actionAttempt) return;
+      action.textContent = "复制链接";
       status.textContent = "请从浏览器地址栏复制链接，或按上方步骤操作。"; status.hidden = false;
-    } finally { action.disabled = false; }
+    } finally { if (attempt === actionAttempt) action.disabled = false; }
   };
   window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); deferredPrompt = event; });
   window.addEventListener("appinstalled", () => { deferredPrompt = null; installed = true; $("account-install").hidden = true; close(); });
