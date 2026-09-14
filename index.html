@@ -9,7 +9,8 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=18" />
+    <link rel="stylesheet" href="./src/styles.css?v=22" />
+    <link rel="stylesheet" href="./src/documents.css?v=20" />
   </head>
   <body>
     <main class="app" id="app">
@@ -340,6 +341,16 @@
       <div id="full-table" class="full-table"></div>
       <div class="table-bottom">对比项目固定在左侧 · 示例数据，仅用于展示</div>
     </dialog>
-    <script type="module" src="./src/app.js?v=18"></script>
+    <dialog id="document-dialog" class="document-dialog" aria-labelledby="document-preview-title">
+      <header class="document-preview-header">
+        <button class="icon-button close-dialog" aria-label="关闭文件预览"><img src="./assets/chevron-left.svg" alt="" draggable="false"></button>
+        <h2 id="document-preview-title"></h2>
+        <a id="document-download" class="document-download" download aria-label="下载原文件"><img src="./assets/download.svg" alt="" draggable="false"><span>下载</span></a>
+      </header>
+      <p class="document-preview-meta" id="document-preview-meta"></p>
+      <div class="document-preview-tools" id="document-preview-tools" hidden></div>
+      <div class="document-preview-body" id="document-preview-body"></div>
+    </dialog>
+    <script type="module" src="./src/app.js?v=20"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { createReply, plans } from "./data.js?v=10";
+import { createReply, plans } from "./data.js?v=19";
 
 function delay(ms, signal) {
   return new Promise((resolve, reject) => {
@@ -61,5 +61,5 @@ export async function* streamReply(request, { signal, interval = 32 } = {}) {
   }
   if (result.table) yield { type: "table", table: result.table };
   if (result.after) yield { type: "text", text: "\n\n" + result.after };
-  yield { type: "done", suggestions: result.suggestions || [] };
+  yield { type: "done", suggestions: result.suggestions || [], documents: result.documents || [] };
 }

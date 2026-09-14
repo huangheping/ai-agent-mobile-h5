@@ -162,6 +162,12 @@ export const comparison = {
 
 export function createReply({ text, planId, files = [] }) {
   const plan = plans.find((item) => item.id === planId);
+  if (!files.length && /pdf|word|excel|演示文件|示例文件|生成文件|导出|下载/i.test(text))
+    return {
+      text: "已为你准备三份演示文件：PDF 适合查看完整分页，Word 方便阅读和后续编辑，Excel 用于逐项对比与整理资料。\n\n点击下方文件即可预览，也可以下载原文件。内容均为虚构示例。",
+      documents: ["demo-pdf", "demo-word", "demo-excel"],
+      suggestions: ["对比三份方案", "整理沟通要点"],
+    };
   if (files.length)
     return {
       text: `已将 ${files.length} 个附件加入本次演示对话。\n\n此样板没有上传或解析文件，也不会读取其中内容。接入真实服务后，可在这里展示解析进度、结果与重试操作。\n\n你可以继续补充希望分析的重点，或输入“对比三份方案”体验宽表格。`,
@@ -173,11 +179,13 @@ export function createReply({ text, planId, files = [] }) {
       table: comparison,
       after:
         "建议先核对保障范围、预算与已有保障，再补齐计划书信息。左右滑动查看各列，也可以展开表格查看完整内容。",
-      suggestions: ["还需要补充哪些资料？", "整理成沟通要点"],
+      documents: ["demo-excel"],
+      suggestions: ["还需要补充哪些资料？", "查看演示文件"],
     };
   if (plan)
     return {
       text: `已选择「${plan.name}」。\n\n我们可以先把需求梳理清楚，再整理方案内容。\n\n${plan.prompt}\n\n你可以直接输入这些信息，无需先选择客户。这个样板演示对话流程，暂不生成正式方案文件。`,
+      documents: ["demo-pdf", "demo-word", "demo-excel"],
       suggestions: ["对比三份方案", "还需要补充哪些资料？"],
     };
   if (/沟通|整理|要点/.test(text))
@@ -192,6 +200,6 @@ export function createReply({ text, planId, files = [] }) {
     };
   return {
     text: "收到你的问题。当前是独立 H5 交互样板，以下为本地模拟回复。\n\n你可以选择一种方案并补充需求，也可以体验方案对比表格、整理沟通要点。每次对话都会保留在当前浏览器，便于从历史会话继续。\n\n试试输入“对比三份方案”，查看宽表格在手机上的展示。",
-    suggestions: ["对比三份方案", "整理沟通要点"],
+    suggestions: ["对比三份方案", "查看演示文件"],
   };
 }

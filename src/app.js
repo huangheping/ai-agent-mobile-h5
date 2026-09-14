@@ -1,5 +1,6 @@
-import { plans } from "./data.js?v=10";
-import { streamReply } from "./service.js?v=10";
+import { plans } from "./data.js?v=19";
+import { streamReply } from "./service.js?v=19";
+import { documentCardsHtml, initDocumentPreview } from "./documents.js?v=20";
 import {
   loadState,
   saveState,
@@ -125,7 +126,7 @@ function tableHtml(table) {
 function messageHtml(m) {
   if (m.role === "user")
     return `<article class="message user" data-message-id="${escape(m.id)}">${m.text ? `<div class="bubble">${escape(m.text)}</div>` : ""}${(m.files || []).map((f) => `<div class="file-message"><img src="./assets/attach.svg" alt=""><span>${escape(f.name)}</span><small>演示附件</small></div>`).join("")}</article>`;
-  return `<article class="message assistant" data-message-id="${escape(m.id)}"><div class="process-host">${processHtml(m)}</div><div class="skill-host">${skillHtml(m)}</div><div class="message-content">${escape(m.text)}</div>${m.table ? `<div class="table-card"><div class="table-card-header"><strong>${escape(m.table.title)}</strong><button class="expand-table" data-table-id="${escape(m.id)}">展开表格 ↗</button></div><div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的方案对比表">${tableHtml(m.table)}</div><div class="table-hint"><span>左右 / 上下滑动 · 示例数据</span><button data-table-id="${escape(m.id)}">全屏查看 ↗</button></div></div>` : ""}${m.status === "streaming" ? '<div class="response-status"><i class="spinner"></i><span>正在整理回答…</span></div>' : m.status === "stopped" ? '<div class="response-status">已停止生成</div>' : m.status === "error" ? '<div class="response-status">回复失败，请重试</div>' : ""}${m.status !== "streaming" ? `<div class="message-actions">${m.text ? `<button class="text-button" data-copy-id="${escape(m.id)}" aria-label="复制回答"><img src="./assets/copy.svg?v=5" alt=""></button>` : ""}${["stopped", "error"].includes(m.status) ? `<button class="text-button" data-retry-id="${escape(m.id)}">重新生成</button>` : ""}</div>` : ""}${m.status === "done" && m.suggestions?.length ? `<div class="followups">${m.suggestions.map((s) => `<button data-prompt="${escape(s)}">${escape(s)}</button>`).join("")}</div>` : ""}</article>`;
+  return `<article class="message assistant" data-message-id="${escape(m.id)}"><div class="process-host">${processHtml(m)}</div><div class="skill-host">${skillHtml(m)}</div><div class="message-content">${escape(m.text)}</div>${m.table ? `<div class="table-card"><div class="table-card-header"><strong>${escape(m.table.title)}</strong><button class="expand-table" data-table-id="${escape(m.id)}">展开表格 ↗</button></div><div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的方案对比表">${tableHtml(m.table)}</div><div class="table-hint"><span>左右 / 上下滑动 · 示例数据</span><button data-table-id="${escape(m.id)}">全屏查看 ↗</button></div></div>` : ""}${documentCardsHtml(m)}${m.status === "streaming" ? '<div class="response-status"><i class="spinner"></i><span>正在整理回答…</span></div>' : m.status === "stopped" ? '<div class="response-status">已停止生成</div>' : m.status === "error" ? '<div class="response-status">回复失败，请重试</div>' : ""}${m.status !== "streaming" ? `<div class="message-actions">${m.text ? `<button class="text-button" data-copy-id="${escape(m.id)}" aria-label="复制回答"><img src="./assets/copy.svg?v=5" alt=""></button>` : ""}${["stopped", "error"].includes(m.status) ? `<button class="text-button" data-retry-id="${escape(m.id)}">重新生成</button>` : ""}</div>` : ""}${m.status === "done" && m.suggestions?.length ? `<div class="followups">${m.suggestions.map((s) => `<button data-prompt="${escape(s)}">${escape(s)}</button>`).join("")}</div>` : ""}</article>`;
 }
 function renderConversation() {
   welcomeOrb?.destroy();
@@ -227,6 +228,7 @@ async function generate(user, existing) {
     Object.assign(response, {
       text: "",
       table: null,
+      documents: [],
       suggestions: [],
       process: null,
       skill: null,
@@ -251,6 +253,7 @@ async function generate(user, existing) {
       if (event.type === "done") {
         response.status = "done";
         response.suggestions = event.suggestions;
+        response.documents = event.documents || [];
       }
       updateReply(response, event.type);
     }
@@ -574,3 +577,5 @@ initHistoryActions({
 });
 
 initAccountMenu();
+
+initDocumentPreview();

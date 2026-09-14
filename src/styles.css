@@ -496,8 +496,10 @@ p {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: #f5f6f8;
-  border: 1px solid #f5f6f8;
+  background:
+    linear-gradient(#f5f6f8, #f5f6f8) padding-box,
+    linear-gradient(90deg, #13b2bb66, #fbb08e88) border-box;
+  border: 1px solid transparent;
   border-radius: 9px;
   color: #2f3640;
   padding: 2px 7px 2px 10px;
@@ -1640,12 +1642,12 @@ dialog::backdrop {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: suggestion-color-flow 12s linear infinite;
+    animation: suggestion-color-flow 8s linear infinite;
   }
 }
 @keyframes suggestion-color-flow {
   0% { background-position: 150% 50%; }
-  33.333333%, 100% { background-position: -50% 50%; }
+  50%, 100% { background-position: -50% 50%; }
 }
 .suggestion {
   border: 1px solid transparent;

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>ICON/文件格式/word</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#FFD7D7" offset="0%"></stop>
+            <stop stop-color="#FFEBEB" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#ACCCF9" offset="0%"></stop>
+            <stop stop-color="#E4ECF6" offset="100%"></stop>
+        </linearGradient>
+        <path d="M1.20000002,0 L21,0 L21,0 L28,6.66666667 L28,30.8 C28,31.4627417 27.4627417,32 26.8,32 L1.20000002,32 C0.537258308,32 2.58546676e-15,31.4627417 4.4408921e-16,30.8 L-2.22044605e-16,1.20000002 C-3.03207056e-16,0.537258308 0.537258308,5.65832887e-16 1.20000002,4.4408921e-16 Z" id="path-3"></path>
+    </defs>
+    <g id="ICON/文件格式/word" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="矩形" x="0" y="0" width="32" height="32"></rect>
+        <g id="图标/PDF" transform="translate(2, 0)">
+            <g id="矩形备份-13">
+                <use fill="url(#linearGradient-1)" xlink:href="#path-3"></use>
+                <use fill="url(#linearGradient-2)" xlink:href="#path-3"></use>
+            </g>
+            <polygon id="路径" fill="#5D9CF3" fill-rule="nonzero" points="9.31798246 22 12.2346491 22 13.9078947 15.0259366 14 15.0259366 15.6425439 22 18.5592105 22 21 11 18.5899123 11 17.0241228 19.1311239 16.9320175 19.1311239 15.3969298 12.0619597 12.6951754 12.0619597 11.0679825 19.1311239 10.9758772 19.1311239 9.44078947 11 7 11"></polygon>
+        </g>
+    </g>
+</svg>
