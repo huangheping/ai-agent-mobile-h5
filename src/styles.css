@@ -771,7 +771,13 @@ dialog::backdrop {
   font-size: 11px;
   margin-top: 6px;
 }
+.history-list.is-empty {
+  display: grid;
+  place-items: center;
+}
 .history-empty {
+  margin: 0;
+  text-align: center;
   font-size: 13px;
   color: #8c978f;
   padding: 14px 10px;

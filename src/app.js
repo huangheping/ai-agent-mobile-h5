@@ -188,6 +188,7 @@ function renderHistory() {
   const sessions = state.sessions
     .filter((s) => s.messages.length || s.draft || s.planId || s.titleEdited)
     .sort((a, b) => b.updatedAt - a.updatedAt);
+  $("history-list").classList.toggle("is-empty", sessions.length === 0);
   $("history-list").innerHTML = sessions.length
     ? sessions
         .map(
