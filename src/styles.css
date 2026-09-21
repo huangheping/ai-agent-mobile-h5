@@ -19,9 +19,18 @@
 * {
   box-sizing: border-box;
 }
+/* Keep the document stationary in mobile WebViews; content scrolls inside the app. */
+html,
 body {
+  width: 100%;
+  height: 100%;
   margin: 0;
   overflow: hidden;
+  overscroll-behavior-x: none;
+}
+body {
+  position: fixed;
+  inset: 0;
 }
 button,
 textarea,
@@ -82,6 +91,7 @@ p {
   top: var(--app-top);
   width: 100%;
   max-width: 460px;
+  min-width: 0;
   height: var(--app-height);
   margin: auto;
   display: flex;
@@ -2687,6 +2697,9 @@ html[data-input-mode="keyboard"] .ai-notice-dialog :focus-visible {
 }
 #plans-dialog .sheet-content {
   padding-bottom: 16px;
+}
+#plans-dialog .dialog-header .close-dialog {
+  background: #f4f6f5;
 }
 
 #ai-notice-title {
