@@ -21,9 +21,13 @@ import { WelcomeAvatar } from "./welcome-avatar.js";
 import { initFocusMode } from "./focus.js?v=23";
 import { findPlanShortcut, consumePlanShortcut } from "./composer-shortcut.js?v=47";
 import { attachmentKind, attachmentIcon } from "./attachment-icons.js?v=50";
+import { initViewportGestures } from "./viewport-gestures.js?v=56";
+import { initInputFocus } from "./input-focus.js?v=55";
 import { copyText, showCopySuccess } from "./message-copy.js?v=52";
 
 initFocusMode();
+initViewportGestures();
+initInputFocus(document.getElementById("message"));
 
 let welcomeOrb = null;
 
