@@ -15,6 +15,7 @@
   --app-height: 100dvh;
   --app-top: 0px;
   --focus-ring: none;
+  --page-surface: #ffffff;
 }
 * {
   box-sizing: border-box;
@@ -96,7 +97,14 @@ p {
   margin: auto;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background:
+    radial-gradient(
+      ellipse 90% 420px at 50% 100px,
+      #dce9ebcc 0%,
+      #e9f0f180 42%,
+      #ffffff00 75%
+    ),
+    var(--page-surface);
   overflow: hidden;
   box-shadow: 0 0 64px #24332c0a;
 }
@@ -106,8 +114,8 @@ p {
   justify-content: space-between;
   flex-shrink: 0;
   padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
-  border-bottom: 1px solid #f0f2f1;
-  background: #ffffffef;
+  border-bottom: 1px solid #dce3e4;
+  background: transparent;
   z-index: 2;
   gap: 12px;
 }
@@ -389,7 +397,7 @@ p {
 .composer-area {
   flex: none;
   padding: 10px 16px max(12px, env(safe-area-inset-bottom));
-  background: #fff;
+  background: linear-gradient(#ffffff00, var(--page-surface) 70%);
   position: relative;
   z-index: 2;
 }
@@ -2242,7 +2250,7 @@ html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
   gap: 12px;
 }
 .composer-area {
-  background: #fff;
+  background: linear-gradient(#ffffff00, var(--page-surface) 70%);
   border: 0;
   box-shadow: none;
 }
@@ -2259,7 +2267,7 @@ html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
 }
 .conversation {
   border: 0;
-  background: #fff;
+  background: transparent;
   box-shadow: none;
   scrollbar-color: #2f364040 transparent;
   overflow-anchor: none;
