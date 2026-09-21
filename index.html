@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=31" />
+    <link rel="stylesheet" href="./src/styles.css?v=35" />
     <link rel="stylesheet" href="./src/documents.css?v=20" />
   </head>
   <body>
@@ -158,13 +158,22 @@
       aria-describedby="ai-notice-warning"
     >
       <div class="ai-notice-body">
-        <h2 id="ai-notice-title" tabindex="-1" autofocus>重要提示</h2>
-        <p class="ai-notice-subtitle">请阅读并确认以下 Al 内容使用声明</p>
-        <p class="ai-notice-warning" id="ai-notice-warning">
-          Al 生成内容可能存在偏差，仅供参考，不构成投资、保险或财务建议。
-        </p>
-        <div class="ai-notice-copy">
-          内容借助AI工具整理生成，可能存在偏差，仅供参考，不构成对于任何投资、保险、金融产品或财务安排之招揽、邀约或任何建议。本公司不就使用此AI内容或其所载的任何言论、意见或预测而导致的任何直接或间接的后果或损失承担任何责任，亦不会对其分析准确性或完整性作出承诺或保证。投资者应根据个人的情况决定理财方案是否切合个人的财务需求、财政状况、负担能力、投资经验、投资目标，及承受风险能力等，不应依赖于本AI内容作任何投保、投资或理财决定。金融产品涉及风险，如有疑问，请咨询专家的意见。持牌经纪人或顾问须复核AI所生成的内容。本内容只供于其分发、传递为合法的国家、地域分发、传递。本内容并非向禁止本文件的任何国家、地域的任何人士（因其国籍、居民身份或其他原因）发出。
+        <header class="ai-notice-hero">
+          <h2 id="ai-notice-title" tabindex="-1" autofocus>重要提示</h2>
+          <p class="ai-notice-subtitle">请阅读并确认以下 AI 内容使用声明</p>
+        </header>
+        <div
+          class="ai-notice-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="AI 内容使用声明正文"
+        >
+          <p class="ai-notice-warning" id="ai-notice-warning">
+            AI 生成内容可能存在偏差，仅供参考，不构成投资、保险或财务建议。
+          </p>
+          <div class="ai-notice-copy">
+            内容借助AI工具整理生成，可能存在偏差，仅供参考，不构成对于任何投资、保险、金融产品或财务安排之招揽、邀约或任何建议。本公司不就使用此AI内容或其所载的任何言论、意见或预测而导致的任何直接或间接的后果或损失承担任何责任，亦不会对其分析准确性或完整性作出承诺或保证。投资者应根据个人的情况决定理财方案是否切合个人的财务需求、财政状况、负担能力、投资经验、投资目标，及承受风险能力等，不应依赖于本AI内容作任何投保、投资或理财决定。金融产品涉及风险，如有疑问，请咨询专家的意见。持牌经纪人或顾问须复核AI所生成的内容。本内容只供于其分发、传递为合法的国家、地域分发、传递。本内容并非向禁止本文件的任何国家、地域的任何人士（因其国籍、居民身份或其他原因）发出。
+          </div>
         </div>
         <button type="button" class="ai-notice-confirm close-dialog">
           我已了解并同意
@@ -200,25 +209,82 @@
       <div class="section-label">历史对话</div>
       <div id="history-list" class="history-list"></div>
       <div class="drawer-account" id="drawer-account">
-        <section class="account-popover" id="account-popover" aria-label="账号信息" hidden>
+        <section
+          class="account-popover"
+          id="account-popover"
+          aria-label="账号信息"
+          hidden
+        >
           <div id="account-overview">
-            <div class="account-summary"><span class="account-avatar" aria-hidden="true">梁</span><div><strong>梁康</strong><small>演示账号</small></div></div>
-            <button class="account-action" id="account-install"><img src="./assets/add-to-home.svg" alt="" draggable="false"><span>添加到桌面</span><span class="account-chevron right" aria-hidden="true"></span></button>
-            <dl class="account-details"><div><dt>域账号</dt><dd>lik18635</dd></div><div><dt>团队</dt><dd>上海精英一队</dd></div><div><dt>版本</dt><dd>0.1.0</dd></div></dl>
-            <button class="account-action account-logout" id="account-logout"><img src="./assets/log-out.svg" alt="" draggable="false"><span>退出登录</span></button>
+            <div class="account-summary">
+              <span class="account-avatar" aria-hidden="true">梁</span>
+              <div><strong>梁康</strong><small>演示账号</small></div>
+            </div>
+            <button class="account-action" id="account-install">
+              <img
+                src="./assets/add-to-home.svg"
+                alt=""
+                draggable="false"
+              /><span>添加到桌面</span
+              ><span class="account-chevron right" aria-hidden="true"></span>
+            </button>
+            <dl class="account-details">
+              <div>
+                <dt>域账号</dt>
+                <dd>lik18635</dd>
+              </div>
+              <div>
+                <dt>团队</dt>
+                <dd>上海精英一队</dd>
+              </div>
+              <div>
+                <dt>版本</dt>
+                <dd>0.1.0</dd>
+              </div>
+            </dl>
+            <button class="account-action account-logout" id="account-logout">
+              <img src="./assets/log-out.svg" alt="" draggable="false" /><span
+                >退出登录</span
+              >
+            </button>
             <p class="account-note" id="account-note" role="status" hidden></p>
           </div>
           <div id="account-install-guide" hidden>
-            <button class="account-back" id="account-back"><img src="./assets/chevron-left.svg" alt="" draggable="false"><span>返回</span></button>
+            <button class="account-back" id="account-back">
+              <img
+                src="./assets/chevron-left.svg"
+                alt=""
+                draggable="false"
+              /><span>返回</span>
+            </button>
             <h3 id="install-guide-title">添加到桌面</h3>
             <p class="install-guide-intro" id="install-guide-intro"></p>
             <ol class="install-guide-steps" id="install-guide-steps"></ol>
-            <button class="account-install-primary" id="install-guide-action" aria-live="polite" aria-atomic="true">复制链接</button>
-            <p class="account-note" id="install-guide-status" role="status" hidden></p>
+            <button
+              class="account-install-primary"
+              id="install-guide-action"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              复制链接
+            </button>
+            <p
+              class="account-note"
+              id="install-guide-status"
+              role="status"
+              hidden
+            ></p>
           </div>
         </section>
-        <button class="account-trigger" id="account-trigger" aria-expanded="false" aria-controls="account-popover">
-          <span class="account-avatar" aria-hidden="true">梁</span><span class="account-trigger-name">梁康</span><span class="account-chevron" aria-hidden="true"></span>
+        <button
+          class="account-trigger"
+          id="account-trigger"
+          aria-expanded="false"
+          aria-controls="account-popover"
+        >
+          <span class="account-avatar" aria-hidden="true">梁</span
+          ><span class="account-trigger-name">梁康</span
+          ><span class="account-chevron" aria-hidden="true"></span>
         </button>
       </div>
     </dialog>
@@ -342,14 +408,32 @@
       <div id="full-table" class="full-table"></div>
       <div class="table-bottom">对比项目固定在左侧 · 示例数据，仅用于展示</div>
     </dialog>
-    <dialog id="document-dialog" class="document-dialog" aria-labelledby="document-preview-title">
+    <dialog
+      id="document-dialog"
+      class="document-dialog"
+      aria-labelledby="document-preview-title"
+    >
       <header class="document-preview-header">
-        <button class="icon-button close-dialog" aria-label="关闭文件预览"><img src="./assets/chevron-left.svg" alt="" draggable="false"></button>
+        <button class="icon-button close-dialog" aria-label="关闭文件预览">
+          <img src="./assets/chevron-left.svg" alt="" draggable="false" />
+        </button>
         <h2 id="document-preview-title"></h2>
-        <a id="document-download" class="document-download" download aria-label="下载原文件"><img src="./assets/download.svg" alt="" draggable="false"><span>下载</span></a>
+        <a
+          id="document-download"
+          class="document-download"
+          download
+          aria-label="下载原文件"
+          ><img src="./assets/download.svg" alt="" draggable="false" /><span
+            >下载</span
+          ></a
+        >
       </header>
       <p class="document-preview-meta" id="document-preview-meta"></p>
-      <div class="document-preview-tools" id="document-preview-tools" hidden></div>
+      <div
+        class="document-preview-tools"
+        id="document-preview-tools"
+        hidden
+      ></div>
       <div class="document-preview-body" id="document-preview-body"></div>
     </dialog>
     <script type="module" src="./src/app.js?v=31"></script>
