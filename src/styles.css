@@ -2047,6 +2047,16 @@ html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
 }
 .brand {
   display: block;
+  min-width: 0;
+}
+.brand-logo {
+  width: 148px;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .brand strong {
   font-size: 16px;
