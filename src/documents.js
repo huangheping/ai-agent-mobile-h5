@@ -6,7 +6,7 @@ export const demoDocuments = [
     icon: "file-pdf.svg",
     name: "家庭保障方案沟通稿.pdf",
     file: "family-plan.pdf",
-    description: "分页预览",
+    sizeBytes: 130482,
   },
   {
     id: "demo-word",
@@ -14,7 +14,7 @@ export const demoDocuments = [
     icon: "file-word.svg",
     name: "家庭保障方案沟通稿与待补充资料清单.docx",
     file: "family-plan.docx",
-    description: "正文预览",
+    sizeBytes: 38955,
   },
   {
     id: "demo-excel",
@@ -22,7 +22,7 @@ export const demoDocuments = [
     icon: "file-excel.svg",
     name: "家庭保障方案对比与资料清单.xlsx",
     file: "plan-comparison.xlsx",
-    description: "2 张工作表",
+    sizeBytes: 6574,
   },
 ];
 const escape = (value) =>
@@ -34,18 +34,27 @@ const escape = (value) =>
       ],
   );
 const url = (file) => new URL("../demo-files/" + file, import.meta.url).href;
+function documentMeta(doc) {
+  if (!Number.isFinite(doc.sizeBytes) || doc.sizeBytes < 0) return doc.type;
+  const unit = doc.sizeBytes >= 1024 * 1024 ? "MB" : doc.sizeBytes >= 1024 ? "KB" : "B";
+  const divisor = unit === "MB" ? 1024 * 1024 : unit === "KB" ? 1024 : 1;
+  const size = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(doc.sizeBytes / divisor);
+  return `${doc.type} · ${size} ${unit}`;
+}
 export function documentCardsHtml(message) {
   const ids = Array.isArray(message.documents) ? message.documents : [];
   const docs = demoDocuments.filter((doc) => ids.includes(doc.id));
   if (!docs.length) return "";
-  return `<div class="reply-documents" aria-label="回复附件">${docs.map((doc) => `<button class="reply-document" data-preview-document="${doc.id}" aria-label="预览 ${escape(doc.name)}"><span class="document-type"><img src="./assets/${doc.icon}" alt="" draggable="false"></span><span class="document-copy"><strong>${escape(doc.name)}</strong><small>${doc.type} · ${doc.description} · 演示文件</small></span><img class="document-arrow" src="./assets/chevron-left.svg" alt=""></button>`).join("")}</div>`;
+  return `<div class="reply-documents" aria-label="回复附件">${docs.map((doc) => `<button class="reply-document" data-preview-document="${doc.id}" aria-label="预览 ${escape(doc.name)}"><span class="document-type"><img src="./assets/${doc.icon}" alt="" draggable="false"></span><span class="document-copy"><strong>${escape(doc.name)}</strong><small>${documentMeta(doc)}</small></span><img class="document-arrow" src="./assets/chevron-left.svg" alt=""></button>`).join("")}</div>`;
 }
 
 export function initDocumentPreview() {
   const dialog = document.getElementById("document-dialog");
   const body = document.getElementById("document-preview-body");
   const toolbar = document.getElementById("document-preview-tools");
-  const meta = document.getElementById("document-preview-meta");
+  const previewError = document.getElementById("document-preview-error");
+  const nameToggle = document.getElementById("document-name-toggle");
+  const nameText = document.getElementById("document-name-text");
   let request = 0,
     controller,
     active,
@@ -60,7 +69,6 @@ export function initDocumentPreview() {
     if (!sheet) return;
     body.innerHTML = `<div class="document-sheet-scroll" tabindex="0" role="region" aria-label="${escape(sheet.name)}，可上下左右滑动">${tableHtml(sheet)}</div>`;
     toolbar.innerHTML = `<div class="document-sheet-tabs" aria-label="工作表">${sheets.map((s, i) => `<button data-sheet-index="${i}" aria-pressed="${i === index}">${escape(s.name)}</button>`).join("")}</div>`;
-    meta.textContent = `${sheet.rows.length} 行 · ${sheet.columns.length} 列 · 左右滑动查看`;
   }
   function setZoom() {
     const pages = body.querySelector(".document-pages");
@@ -77,11 +85,17 @@ export function initDocumentPreview() {
     controller = new AbortController();
     const attempt = ++request;
     zoom = 1;
-    document.getElementById("document-preview-title").textContent = doc.name;
+    nameText.textContent = doc.name;
+    document.getElementById("document-preview-title").setAttribute("aria-label", doc.name);
+    nameToggle.title = doc.name;
+    nameToggle.setAttribute("aria-expanded", "false");
+    nameToggle.setAttribute("aria-label", `展开完整文件名：${doc.name}`);
+    nameText.scrollTop = 0;
     const download = document.getElementById("document-download");
     download.href = url(doc.file);
     download.download = doc.name;
-    meta.textContent = `${doc.type} · 演示文件`;
+    previewError.hidden = true;
+    previewError.textContent = "";
     body.className = `document-preview-body ${doc.id}`;
     body.innerHTML =
       '<div class="document-loading" role="status"><i class="spinner"></i>正在打开文件…</div>';
@@ -110,11 +124,12 @@ export function initDocumentPreview() {
         body.innerHTML = `<div class="document-pages">${data.pages.map((page, i) => `<figure><img src="${url(page.image)}" width="${page.width}" height="${page.height}" alt="${escape(doc.name)} 第 ${i + 1} 页" ${i ? 'loading="lazy"' : ""} draggable="false"><figcaption>${i + 1} / ${data.pages.length}</figcaption></figure>`).join("")}</div>`;
         body.querySelectorAll("img").forEach((img) =>
           img.addEventListener("error", () => {
-            if (attempt === request)
-              meta.textContent = "部分页面未加载，请重新打开或下载原文件";
+            if (attempt === request) {
+              previewError.textContent = "部分页面未加载，请重新打开或下载原文件";
+              previewError.hidden = false;
+            }
           }),
         );
-        meta.textContent = "PDF · 分页预览 · 演示文件";
         toolbar.hidden = false;
         setZoom();
       } else if (doc.id === "demo-word") {
@@ -124,7 +139,6 @@ export function initDocumentPreview() {
             return `<${tag}>${escape(block.text)}</${tag}>`;
           })
           .join("")}</article>`;
-        meta.textContent = "Word · 正文预览，原排版请下载查看";
       } else {
         sheets = data;
         toolbar.hidden = false;
@@ -143,6 +157,12 @@ export function initDocumentPreview() {
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-preview-document]");
     if (button) open(button.dataset.previewDocument, button);
+  });
+  nameToggle.addEventListener("click", () => {
+    const expanded = nameToggle.getAttribute("aria-expanded") !== "true";
+    nameToggle.setAttribute("aria-expanded", String(expanded));
+    nameToggle.setAttribute("aria-label", `${expanded ? "收起" : "展开完整"}文件名：${active.name}`);
+    nameText.scrollTop = 0;
   });
   dialog.addEventListener("click", (event) => {
     const button = event.target.closest("button");

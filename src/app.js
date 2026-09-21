@@ -1,6 +1,6 @@
 import { plans } from "./data.js?v=19";
 import { streamReply } from "./service.js?v=19";
-import { documentCardsHtml, initDocumentPreview } from "./documents.js?v=20";
+import { documentCardsHtml, initDocumentPreview } from "./documents.js?v=46";
 import {
   loadState,
   saveState,
@@ -19,6 +19,9 @@ import { initVoice } from "./voice.js?v=43";
 import { initAccountMenu } from "./account.js?v=17";
 import { WelcomeAvatar } from "./welcome-avatar.js";
 import { initFocusMode } from "./focus.js?v=23";
+import { findPlanShortcut, consumePlanShortcut } from "./composer-shortcut.js?v=47";
+import { attachmentKind, attachmentIcon } from "./attachment-icons.js?v=50";
+import { copyText, showCopySuccess } from "./message-copy.js?v=52";
 
 initFocusMode();
 
@@ -50,6 +53,7 @@ let pending = null,
   followTail = true,
   tailFrame,
   saveWarning = false;
+let planShortcut = null;
 const sessionFiles = new Map();
 const current = () => state.sessions.find((s) => s.id === state.currentId);
 const files = () => sessionFiles.get(state.currentId) || [];
@@ -90,6 +94,11 @@ function resizeInput() {
   el.style.height = "auto";
   el.style.height = Math.min(el.scrollHeight, 132) + "px";
 }
+function attachmentNameHtml(name) {
+  const characters = Array.from(name);
+  const tail = characters.length > 11 ? characters.splice(-11).join("") : "";
+  return `<span class="attachment-name-start">${escape(characters.join(""))}</span><span class="attachment-name-tail">${escape(tail)}</span>`;
+}
 function controls() {
   const active = !!pending;
   const send = $("send-button");
@@ -111,13 +120,11 @@ function controls() {
     "aria-expanded",
     String($("plans-dialog").open),
   );
-  $("message").placeholder = plan
-    ? "补充需求、预算或希望分析的问题…"
-    : "有问题，随时问我…";
+  $("composer-placeholder").hidden = $("message").value.length > 0;
   $("attachment-tray").innerHTML = files()
     .map(
       (f) =>
-        `<div class="attachment-chip"><span>${escape(f.name)}</span><button type="button" data-remove-file="${escape(f.id)}" aria-label="移除附件 ${escape(f.name)}">×</button></div>`,
+        `<div class="attachment-chip"><img class="attachment-tag-icon" src="${attachmentIcon(f)}" alt="" draggable="false"><button type="button" class="attachment-name" data-attachment-name="${escape(f.name)}" title="${escape(f.name)}" aria-label="查看完整文件名：${escape(f.name)}">${attachmentNameHtml(f.name)}</button><button type="button" class="attachment-remove" data-remove-file="${escape(f.id)}" aria-label="移除附件 ${escape(f.name)}"><img src="./assets/attachment-remove.svg" alt="" draggable="false"></button></div>`,
     )
     .join("");
   $("history-button").disabled = active;
@@ -126,10 +133,16 @@ function controls() {
 function tableHtml(table) {
   return `<table class="comparison-table"><caption class="sr-only">${escape(table.title)}，示例数据</caption><thead><tr>${table.columns.map((c) => `<th scope="col">${escape(c)}</th>`).join("")}</tr></thead><tbody>${table.rows.map((row) => `<tr>${row.map((v, i) => (i === 0 ? `<th scope="row">${escape(v)}</th>` : `<td>${escape(v)}</td>`)).join("")}</tr>`).join("")}</tbody></table>`;
 }
+function copyButtonHtml(m) {
+  const label = m.role === "user" ? "复制我的消息" : "复制回答";
+  return m.text?.trim() ? `<button type="button" class="text-button" data-copy-id="${escape(m.id)}" data-copy-label="${label}" aria-label="${label}" title="${label}"><img src="./assets/message-copy.svg" alt="" draggable="false"></button>` : "";
+}
 function messageHtml(m) {
-  if (m.role === "user")
-    return `<article class="message user" data-message-id="${escape(m.id)}">${m.text ? `<div class="bubble">${escape(m.text)}</div>` : ""}${(m.files || []).map((f) => `<div class="file-message"><img src="./assets/attach.svg" alt=""><span>${escape(f.name)}</span><small>演示附件</small></div>`).join("")}</article>`;
-  return `<article class="message assistant" data-message-id="${escape(m.id)}"><div class="process-host">${processHtml(m)}</div><div class="skill-host">${skillHtml(m)}</div><div class="message-content">${escape(m.text)}</div>${m.table ? `<div class="table-card"><div class="table-card-header"><strong>${escape(m.table.title)}</strong><button class="expand-table" data-table-id="${escape(m.id)}">展开表格 ↗</button></div><div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的方案对比表">${tableHtml(m.table)}</div><div class="table-hint"><span>左右 / 上下滑动 · 示例数据</span><button data-table-id="${escape(m.id)}">全屏查看 ↗</button></div></div>` : ""}${documentCardsHtml(m)}${m.status === "streaming" ? '<div class="response-status"><i class="spinner"></i><span>正在整理回答…</span></div>' : m.status === "stopped" ? '<div class="response-status">已停止生成</div>' : m.status === "error" ? '<div class="response-status">回复失败，请重试</div>' : ""}${m.status !== "streaming" ? `<div class="message-actions">${m.text ? `<button class="text-button" data-copy-id="${escape(m.id)}" aria-label="复制回答"><img src="./assets/copy.svg?v=5" alt=""></button>` : ""}${["stopped", "error"].includes(m.status) ? `<button class="text-button" data-retry-id="${escape(m.id)}">重新生成</button>` : ""}</div>` : ""}${m.status === "done" && m.suggestions?.length ? `<div class="followups">${m.suggestions.map((s) => `<button data-prompt="${escape(s)}">${escape(s)}</button>`).join("")}</div>` : ""}</article>`;
+  if (m.role === "user") {
+    const attachments = m.files || [];
+    return `<article class="message user" data-message-id="${escape(m.id)}"><div class="bubble${attachments.length ? " has-attachments" : ""}">${m.text ? `<div class="user-message-text">${escape(m.text)}</div>` : ""}${attachments.length ? `${m.text ? '<div class="user-attachment-divider"></div>' : ""}<ul class="user-attachments" aria-label="已发送附件">${attachments.map((f) => `<li class="user-attachment"><img class="user-attachment-icon${attachmentKind(f) === "generic" ? " generic" : ""}" src="${attachmentIcon(f)}" alt="" draggable="false"><button type="button" class="user-attachment-name" data-attachment-name="${escape(f.name)}" title="${escape(f.name)}" aria-label="查看完整文件名：${escape(f.name)}">${escape(f.name)}</button><img class="user-attachment-finished" src="./assets/attachment-finished.svg" alt="已添加" draggable="false"></li>`).join("")}</ul>` : ""}</div>${m.text?.trim() ? `<div class="message-actions">${copyButtonHtml(m)}</div>` : ""}</article>`;
+  }
+  return `<article class="message assistant" data-message-id="${escape(m.id)}"><div class="process-host">${processHtml(m)}</div><div class="skill-host">${skillHtml(m)}</div><div class="message-content">${escape(m.text)}</div>${m.table ? `<div class="table-card"><div class="table-card-header"><strong>${escape(m.table.title)}</strong><button class="expand-table" data-table-id="${escape(m.id)}">展开表格 ↗</button></div><div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的方案对比表">${tableHtml(m.table)}</div><div class="table-hint"><span>左右 / 上下滑动 · 示例数据</span><button data-table-id="${escape(m.id)}">全屏查看 ↗</button></div></div>` : ""}${documentCardsHtml(m)}${m.status === "streaming" ? '<div class="response-status"><i class="spinner"></i><span>正在整理回答…</span></div>' : m.status === "stopped" ? '<div class="response-status">已停止生成</div>' : m.status === "error" ? '<div class="response-status">回复失败，请重试</div>' : ""}${m.status !== "streaming" ? `<div class="message-actions">${copyButtonHtml(m)}${["stopped", "error"].includes(m.status) ? `<button class="text-button" data-retry-id="${escape(m.id)}">重新生成</button>` : ""}</div>` : ""}${m.status === "done" && m.suggestions?.length ? `<div class="followups">${m.suggestions.map((s) => `<button data-prompt="${escape(s)}">${escape(s)}</button>`).join("")}</div>` : ""}</article>`;
 }
 function renderConversation() {
   welcomeOrb?.destroy();
@@ -178,7 +191,8 @@ function openDialog(id) {
   for (const d of document.querySelectorAll("dialog[open]")) d.close();
   $(id).showModal();
 }
-function showPlans() {
+function showPlans(shortcut = null) {
+  planShortcut = shortcut;
   $("plan-list").innerHTML = plans
     .map(
       (p) =>
@@ -197,7 +211,7 @@ function renderHistory() {
     ? sessions
         .map(
           (s) =>
-            `<div class="history-row ${s.id === state.currentId ? "active" : ""}"><button class="history-item" data-session-id="${s.id}" ${s.id === state.currentId ? 'aria-current="true"' : ""}><strong>${escape(s.title)}</strong><small>${new Date(s.updatedAt).toLocaleDateString("zh-CN", { month: "long", day: "numeric" })}${!s.messages.length ? " · 草稿" : ""}${s.id === state.currentId ? " · 当前会话" : ""}</small></button><button class="icon-button history-more" data-history-actions="${s.id}" aria-label="管理会话：${escape(s.title)}" aria-haspopup="dialog"><img src="./assets/more.svg" alt=""></button></div>`,
+            `<div class="history-row ${s.id === state.currentId ? "active" : ""}"><button class="history-item" data-session-id="${s.id}" ${s.id === state.currentId ? 'aria-current="true"' : ""}><strong>${escape(s.title)}</strong><small>${new Date(s.updatedAt).toLocaleDateString("zh-CN", { month: "long", day: "numeric" })}${!s.messages.length ? " · 草稿" : ""}${s.id === state.currentId ? " · 当前会话" : ""}</small></button><button class="icon-button history-more" data-history-actions="${s.id}" aria-label="管理会话：${escape(s.title)}" aria-haspopup="dialog"><img src="./assets/more.svg?v=20260921-2" alt=""></button></div>`,
         )
         .join("")
     : '<p class="history-empty">还没有历史会话。<br>开始一次对话后，会保存在这里。</p>';
@@ -304,11 +318,16 @@ $("composer").addEventListener("submit", (event) => {
   if (pending) pending.controller.abort();
   else send();
 });
-$("message").addEventListener("input", () => {
+$("message").addEventListener("input", (event) => {
   current().draft = $("message").value;
   resizeInput();
   controls();
   persist();
+  const shortcut = findPlanShortcut($("message"), event);
+  if (shortcut && !pending) {
+    $("message").blur();
+    showPlans(shortcut);
+  }
 });
 $("message").addEventListener("keydown", (event) => {
   if (
@@ -323,8 +342,11 @@ $("message").addEventListener("keydown", (event) => {
   }
 });
 $("ai-notice-trigger").onclick = () => openDialog("ai-notice-dialog");
-$("plan-button").onclick = showPlans;
-$("plans-dialog").addEventListener("close", controls);
+$("plan-button").onclick = () => showPlans();
+$("plans-dialog").addEventListener("close", () => {
+  planShortcut = null;
+  controls();
+});
 $("history-button").onclick = showHistory;
 $("new-button").onclick = startNew;
 $("drawer-new").onclick = startNew;
@@ -387,6 +409,8 @@ new ResizeObserver(() => {
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  if (button.hasAttribute("data-attachment-name"))
+    toast(button.dataset.attachmentName);
   if (button.classList.contains("close-dialog"))
     button.closest("dialog").close();
   if (button.dataset.processId) {
@@ -405,10 +429,17 @@ document.addEventListener("click", async (event) => {
   }
   if (button.hasAttribute("data-open-plans")) showPlans();
   if (button.dataset.planId) {
+    const fromShortcut = !!planShortcut;
+    if (fromShortcut) {
+      $("message").value = consumePlanShortcut($("message").value, planShortcut);
+      current().draft = $("message").value;
+      resizeInput();
+    }
     current().planId = button.dataset.planId;
     persist();
     controls();
     $("plans-dialog").close();
+    if (fromShortcut) $("message").focus({ preventScroll: true });
     $("announcement").textContent = "已选择" + planFor(current().planId).name;
   }
   if (button.dataset.action === "remove-plan") {
@@ -462,6 +493,7 @@ document.addEventListener("click", async (event) => {
   }
   if (button.dataset.copyId) {
     const m = current().messages.find((m) => m.id === button.dataset.copyId);
+    if (!m) return;
     const text =
       m.text +
       (m.table
@@ -471,10 +503,14 @@ document.addEventListener("click", async (event) => {
             .join("\n")
         : "");
     try {
-      await navigator.clipboard.writeText(text);
-      toast("回答已复制");
+      button.disabled = true;
+      await copyText(text);
+      showCopySuccess(button);
+      toast(m.role === "user" ? "消息已复制" : "回答已复制");
     } catch {
-      toast("复制不可用，请长按回答选择文字。");
+      toast("复制不可用，请长按消息选择文字。");
+    } finally {
+      button.disabled = false;
     }
   }
   if (button.dataset.retryId) {

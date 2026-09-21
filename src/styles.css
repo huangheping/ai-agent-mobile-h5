@@ -101,14 +101,7 @@ p {
   margin: auto;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(
-      ellipse 90% 420px at 50% 100px,
-      #dce9ebcc 0%,
-      #e9f0f180 42%,
-      #ffffff00 75%
-    ),
-    var(--page-surface);
+  background: var(--page-surface);
   overflow: hidden;
   box-shadow: 0 0 64px #24332c0a;
 }
@@ -375,28 +368,54 @@ p {
   line-height: 1.5;
   min-height: 38px;
 }
-.file-message {
+.user .bubble.has-attachments {
+  min-width: 0;
+  white-space: normal;
+}
+.user-message-text {
+  white-space: pre-wrap;
+}
+.user-attachment-divider {
+  margin: 10px 0 8px;
+  border-top: 1px solid #ffffff26;
+}
+.user-attachments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.user-attachment {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  padding: 9px 10px;
-  margin-top: 8px;
+  min-width: 0;
   max-width: 100%;
-  border: 1px solid #e0e8e4;
-  border-radius: 8px;
-  background: #f7faf8;
 }
-.file-message img {
+.user-attachment img {
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
 }
-.file-message span {
-  overflow-wrap: anywhere;
+.user-attachment-icon.generic {
+  filter: brightness(0) invert(1);
+  opacity: 0.65;
 }
-.file-message small {
-  color: #7a8880;
+.user-attachment-name {
+  min-width: 0;
+  max-width: 280px;
+  min-height: 24px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 24px;
+  color: #ffffffd9;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 .composer-area {
   flex: none;
@@ -435,11 +454,42 @@ p {
 .composer textarea::placeholder {
   color: #949e99;
 }
-/* Leave a margin above mobile focus-zoom thresholds without restricting pinch zoom. */
-@media (max-width: 680px), (pointer: coarse) {
-  .composer textarea {
-    font-size: 17px;
-    line-height: 26px;
+.composer-input {
+  position: relative;
+  --hint-line-height: 25px;
+  font-size: 16px;
+}
+.rotating-hint textarea::placeholder {
+  color: transparent;
+}
+.composer-placeholder {
+  position: absolute;
+  top: 0;
+  inset-inline: 3px;
+  height: var(--hint-line-height);
+  overflow: hidden;
+  color: #949e99;
+  pointer-events: none;
+  user-select: none;
+}
+.composer-placeholder-track {
+  animation: composer-hint-roll 10s infinite;
+}
+.composer-placeholder-track span {
+  display: block;
+  height: var(--hint-line-height);
+  line-height: var(--hint-line-height);
+  white-space: nowrap;
+}
+@keyframes composer-hint-roll {
+  0%, 44% { transform: translateY(0); }
+  50%, 94% { transform: translateY(calc(-1 * var(--hint-line-height))); }
+  100% { transform: translateY(calc(-2 * var(--hint-line-height))); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-placeholder-track {
+    animation: none;
+    transform: translateY(calc(-1 * var(--hint-line-height)));
   }
 }
 .composer-tools {
@@ -566,31 +616,74 @@ p {
 }
 .attachment-tray {
   display: flex;
-  gap: 8px;
-  overflow: auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 6px;
+  min-width: 0;
+  max-height: min(180px, 25dvh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   padding-bottom: 8px;
 }
 .attachment-chip {
   display: flex;
   align-items: center;
-  gap: 5px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding-left: 10px;
-  font-size: 11px;
-  max-width: 220px;
-  flex-shrink: 0;
+  gap: 8px;
+  height: 32px;
+  border: 1px solid rgba(47, 54, 64, 0.12);
+  border-radius: 16px;
+  padding-left: 12px;
+  background: #fff;
+  color: #2f3640;
+  font-size: 12px;
+  max-width: min(260px, 100%);
+  min-width: 0;
+  flex: 0 1 auto;
 }
-.attachment-chip span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.attachment-tag-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  pointer-events: none;
+}
+.attachment-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+  flex: 1 1 auto;
+  font: inherit;
+  text-align: left;
   white-space: nowrap;
 }
-.attachment-chip button {
-  width: 34px;
-  height: 34px;
-  font-size: 18px;
+.attachment-name-start {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attachment-name-tail {
   flex: none;
+}
+.attachment-remove {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  margin-left: -6px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+}
+.attachment-remove img {
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.attachment-remove:active {
+  background: #2f36400d;
 }
 .jump-bottom {
   position: absolute;
@@ -1895,6 +1988,7 @@ html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
 .voice-active .composer textarea,
 .voice-active .send-button {
   pointer-events: none;
+  overflow-wrap: anywhere;
 }
 
 .history-row {
@@ -2303,15 +2397,25 @@ html[data-input-mode="keyboard"] .plan-option:focus-visible .plan-copy strong {
 }
 .message-actions [data-copy-id] {
   display: grid;
-  place-items: center;
+  align-items: center;
+  justify-items: start;
   padding: 0;
   width: 44px;
   height: 44px;
 }
 .message-actions [data-copy-id] img {
-  width: 18px;
-  height: 18px;
-  opacity: 0.6;
+  width: 24px;
+  height: 24px;
+  opacity: 1;
+}
+.message-actions [data-copy-id]:hover {
+  background: transparent;
+}
+.user .message-actions {
+  justify-content: flex-end;
+}
+.user .message-actions [data-copy-id] {
+  justify-items: end;
 }
 .assistant-head {
   margin: 16px 0 10px;
