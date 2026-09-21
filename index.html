@@ -8,8 +8,9 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
-    <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=56" />
+    <link rel="icon" href="./assets/favicon.ico?v=62" />
+    <link rel="stylesheet" href="./src/styles.css?v=61" />
+    <link rel="stylesheet" href="./src/attachment-sheet-art.css?v=62" />
     <link rel="stylesheet" href="./src/documents.css?v=45" />
   </head>
   <body>
@@ -87,14 +88,13 @@
           </div>
           <div class="composer-tools">
             <div class="tool-group composer-left">
-              <button
-                type="button"
-                class="icon-button attachment-button"
-                id="attachment-button"
-                aria-label="添加附件"
-              >
-                <img src="./assets/attach.svg?v=20260921-54" alt="" />
-              </button>
+              <div class="attachment-control">
+                <button type="button" class="icon-button attachment-button" id="attachment-button" aria-label="添加附件" aria-haspopup="dialog" aria-controls="attachments-dialog">
+                  <img src="./assets/attach.svg?v=20260921-54" alt="" />
+                </button>
+                <input id="camera-input" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true" />
+                <input id="files-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*" multiple tabindex="-1" aria-hidden="true" />
+              </div>
               <div class="plan-control" id="plan-control">
                 <button
                   type="button"
@@ -362,48 +362,30 @@
 
     <dialog
       id="attachments-dialog"
-      class="sheet attachment-sheet"
+      class="sheet attachment-sheet attachment-sheet--art"
       aria-labelledby="attachments-title"
     >
+      <div class="attachment-hero">
       <div class="handle"></div>
       <header class="dialog-header">
         <div>
           <h2 id="attachments-title">添加附件</h2>
-          <p>样板仅展示文件选择，不上传或解析</p>
         </div>
         <button class="icon-button close-dialog" aria-label="关闭附件选择">
           <img src="./assets/close.svg" alt="" />
         </button>
       </header>
+      </div>
       <div class="attachment-options">
         <button data-file-source="camera">
           <span>拍照</span><small>拍摄纸质资料或计划书</small><b>›</b>
         </button>
-        <button data-file-source="photos">
-          <span>从相册选择</span><small>照片、截图</small><b>›</b>
-        </button>
         <button data-file-source="files">
-          <span>选择文件</span><small>PDF、Word、Excel · 单个不超过 20 MB</small
+          <span>选择图片或文件</span><small>照片、PDF、Word、Excel · 单个不超过 20 MB</small
           ><b>›</b>
         </button>
       </div>
     </dialog>
-    <input
-      id="camera-input"
-      type="file"
-      accept="image/*"
-      capture="environment"
-      hidden
-    />
-    <input id="photos-input" type="file" accept="image/*" multiple hidden />
-    <input
-      id="files-input"
-      type="file"
-      accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
-      multiple
-      hidden
-    />
-
     <dialog
       id="table-dialog"
       class="table-dialog"
@@ -453,6 +435,6 @@
       ></div>
       <div class="document-preview-body" id="document-preview-body"></div>
     </dialog>
-    <script type="module" src="./src/app.js?v=56"></script>
+    <script type="module" src="./src/app.js?v=59"></script>
   </body>
 </html>

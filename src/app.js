@@ -529,7 +529,7 @@ document.addEventListener("click", async (event) => {
     if (user) generate(user, current().messages[index]);
   }
 });
-for (const source of ["camera", "photos", "files"])
+for (const source of ["camera", "files"])
   $(source + "-input").addEventListener("change", (event) => {
     const result = validateFiles(
       Array.from(event.target.files || []),
