@@ -2693,21 +2693,18 @@ html[data-input-mode="keyboard"] .plan-button:focus-visible,
 .voice-feedback .voice-scene {
   position: relative;
   isolation: isolate;
-  padding: 64px 24px calc(40px + env(safe-area-inset-bottom));
+  padding: 88px 24px calc(16px + env(safe-area-inset-bottom));
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   animation: voice-surface-appear 160ms ease-out;
 }
-.voice-feedback .voice-scene::before,
-.voice-feedback .voice-scene::after {
-  content: "";
+.voice-feedback .voice-background {
   position: absolute;
   inset: 0 -6% -20%;
   z-index: -1;
   pointer-events: none;
-  filter: blur(12px);
   /* Two shallow waves; 0–100% mask position moves one half-width tile right. */
   --voice-wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='soft' x='-10%25' y='-30%25' width='120%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23soft)' fill='white' d='M-600 42 C-500 33 -400 33 -300 42 S-100 51 0 42 C100 33 200 33 300 42 S500 51 600 42 C700 33 800 33 900 42 S1100 51 1200 42 V400 H-600Z'/%3E%3C/svg%3E");
   -webkit-mask-image: var(--voice-wave-mask);
@@ -2717,10 +2714,16 @@ html[data-input-mode="keyboard"] .plan-button:focus-visible,
   -webkit-mask-repeat: repeat-x;
   mask-repeat: repeat-x;
   animation: voice-tide 4s linear infinite;
-  transition: opacity 70ms linear;
 }
-.voice-feedback .voice-scene::before {
-  opacity: calc(1 - var(--cancel-progress));
+/* Blend opaque colors first, then mask once: no double edge or white underlay. */
+.voice-feedback .voice-background::before,
+.voice-feedback .voice-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.voice-feedback .voice-background::before {
+  animation: voice-tide 4s linear infinite;
   background:
     linear-gradient(90deg, #24d4c900, #62eadc24 30%, #025b5218 70%, #24d4c900),
     radial-gradient(ellipse at 100% 88%, var(--green) 0, #025b5200 64%),
@@ -2730,11 +2733,12 @@ html[data-input-mode="keyboard"] .plan-button:focus-visible,
   background-size: 50% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-repeat: repeat-x, no-repeat, no-repeat, no-repeat;
 }
-.voice-feedback .voice-scene::after {
+.voice-feedback .voice-background::after {
   background:
     radial-gradient(ellipse at 80% 65%, #ef9baa, transparent 62%),
     linear-gradient(145deg, #e37b93, #ca4967);
   opacity: var(--cancel-progress);
+  transition: opacity 100ms linear;
 }
 .voice-active .composer-area {
   opacity: 0;
@@ -2762,10 +2766,9 @@ html[data-input-mode="keyboard"] .plan-button:focus-visible,
 }
 @media (prefers-reduced-motion: reduce) {
   .voice-feedback .voice-scene,
-  .voice-feedback .voice-scene::before,
-  .voice-feedback .voice-scene::after { animation: none; }
-  .voice-feedback .voice-scene::before,
-  .voice-feedback .voice-scene::after { transition: none; }
+  .voice-feedback .voice-background,
+  .voice-feedback .voice-background::before { animation: none; }
+  .voice-feedback .voice-background::after { transition: none; }
 }
 .voice-feedback .voice-caption,
 .voice-feedback .voice-timer,

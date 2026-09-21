@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff" />
     <title>GAIP · AI 对话</title>
     <link rel="icon" type="image/svg+xml" href="./assets/agent.svg" />
-    <link rel="stylesheet" href="./src/styles.css?v=30" />
+    <link rel="stylesheet" href="./src/styles.css?v=31" />
     <link rel="stylesheet" href="./src/documents.css?v=20" />
   </head>
   <body>
@@ -41,6 +41,7 @@
         hidden
       >
         <div class="voice-scene" id="voice-scene" data-state="idle">
+          <div class="voice-background" aria-hidden="true"></div>
           <div class="voice-caption">
             <span class="record-dot"></span
             ><span id="voice-caption">正在聆听</span
@@ -351,6 +352,6 @@
       <div class="document-preview-tools" id="document-preview-tools" hidden></div>
       <div class="document-preview-body" id="document-preview-body"></div>
     </dialog>
-    <script type="module" src="./src/app.js?v=23"></script>
+    <script type="module" src="./src/app.js?v=31"></script>
   </body>
 </html>

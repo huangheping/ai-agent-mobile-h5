@@ -15,7 +15,7 @@ import {
   applyProcessEvent,
   interruptProcess,
 } from "./process.js";
-import { initVoice } from "./voice.js?v=14";
+import { initVoice } from "./voice.js?v=31";
 import { initAccountMenu } from "./account.js?v=17";
 import { WelcomeAvatar } from "./welcome-avatar.js";
 import { initFocusMode } from "./focus.js?v=23";

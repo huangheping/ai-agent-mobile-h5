@@ -52,6 +52,30 @@ test("默认演示不会自动录音，短按不进入免持或转写", () => {
   win.dispatchEvent(new win.Event("pagehide"));
   dom.window.close();
 });
+test("轻微移动不变色，超过缓冲距离渐变，达到取消距离后才取消", () => {
+  const { $, dom, pointer } = setup();
+  const scene = $("voice-scene");
+  const progress = () => Number(scene.style.getPropertyValue("--cancel-progress"));
+  pointer("pointerdown", 500);
+  for (const y of [505, 496, 484, 476]) {
+    pointer("pointermove", y);
+    assert.equal(progress(), 0);
+    assert.equal(scene.classList.contains("cancel-ready"), false);
+  }
+  pointer("pointermove", 470);
+  assert.ok(progress() > 0 && progress() < 0.1);
+  pointer("pointermove", 452);
+  assert.equal(progress(), 0.5);
+  assert.equal(scene.classList.contains("cancel-ready"), false);
+  pointer("pointermove", 428);
+  assert.equal(progress(), 1);
+  assert.equal(scene.classList.contains("cancel-ready"), true);
+  pointer("pointermove", 490);
+  assert.equal(progress(), 0);
+  assert.equal(scene.classList.contains("cancel-ready"), false);
+  pointer("pointercancel");
+  dom.window.close();
+});
 test("上移后松开取消，没有转写结果", () => {
   const { $, win, confirmed, dom, pointer, clock } = setup();
 

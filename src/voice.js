@@ -341,7 +341,9 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     if (!gesture || gesture.id !== id) return;
     gesture.dy = y - gesture.y;
     if (mode !== "recording") return;
-    const progress = Math.min(1, Math.max(0, -gesture.dy / 72));
+    // Ignore normal hand jitter; ease into cancellation after 24px of upward travel.
+    const travel = Math.min(1, Math.max(0, (-gesture.dy - 24) / (72 - 24)));
+    const progress = travel * travel * (3 - 2 * travel);
     scene.style.setProperty("--cancel-progress", progress);
     scene.classList.toggle("cancel-ready", progress >= 1);
     drag = -Math.min(100, Math.max(0, -gesture.dy)) * 0.22;
