@@ -1751,7 +1751,7 @@ dialog::backdrop {
   background: #f0f0f0;
 }
 .welcome {
-  padding: clamp(30px, 7vh, 62px) 2px 24px;
+  padding: clamp(30px, 7vh, 24px) 2px 24px;
 }
 .welcome-logo {
   width: 52px;
