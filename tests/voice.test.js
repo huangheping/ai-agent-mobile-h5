@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 import { readFile } from "node:fs/promises";
 import { initVoice } from "../src/voice.js";
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-function setup(demoMode = true) {
+function setup(demoMode = true, canOpen = () => true) {
   const dom = new JSDOM(html, { url: "http://localhost" }),
     win = dom.window,
     clock = { value: 0 };
@@ -25,19 +25,91 @@ function setup(demoMode = true) {
   const confirmed = [];
   initVoice({
     demoMode,
-    canOpen: () => true,
+    canOpen,
     onConfirm: (t) => confirmed.push(t),
     notify: () => {},
   });
   const $ = (id) => win.document.getElementById(id);
-  const pointer = (type, y = 500) => {
+  const pointer = (type, y = 500, pointerType = "mouse") => {
     const e = new win.Event(type, { bubbles: true, cancelable: true });
-    Object.assign(e, { button: 0, pointerId: 1, clientY: y, isPrimary: true });
+    Object.assign(e, { button: 0, pointerId: 1, clientY: y, isPrimary: true, pointerType });
     $("voice-button").dispatchEvent(e);
   };
+  const touch = (type, { id = 1, screenY = 500, clientY = screenY, target = $("voice-button") } = {}) => {
+    const e = new win.Event(type, { bubbles: true, cancelable: true });
+    const contact = { identifier: id, screenY, clientY };
+    Object.assign(e, {
+      changedTouches: [contact],
+      touches: ["touchend", "touchcancel"].includes(type) ? [] : [contact],
+    });
+    target.dispatchEvent(e);
+    return e;
+  };
 
-  return { dom, win, $, confirmed, clock, pointer };
+  return { dom, win, $, confirmed, clock, pointer, touch };
 }
+
+test("输入框聚焦后首次触摸即可开始语音，收起键盘并保留草稿", async () => {
+  const { $, dom, win, clock, touch, pointer, confirmed } = setup();
+  const input = $("message");
+  input.value = "尚未发送的文字";
+  input.focus();
+  assert.equal(win.document.activeElement, input);
+  // iOS delivers pointerdown before touchstart; only touch owns this gesture.
+  pointer("pointerdown", 500, "touch");
+  assert.equal($("voice-scene").dataset.state, "idle");
+  touch("touchstart");
+  assert.notEqual(win.document.activeElement, input);
+  assert.equal(input.value, "尚未发送的文字");
+  assert.equal($("voice-scene").dataset.state, "recording");
+  assert.equal($("voice-feedback").hidden, false);
+
+  // Layout/viewport movement must not be mistaken for an upward finger swipe.
+  win.dispatchEvent(new win.Event("resize"));
+  touch("touchmove", { clientY: 250, screenY: 500, target: win.document });
+  assert.equal($("voice-scene").classList.contains("cancel-ready"), false);
+  pointer("pointercancel", 250, "touch");
+  assert.equal($("voice-scene").dataset.state, "recording");
+  clock.value = 1200;
+  touch("touchend", { clientY: 250, screenY: 500, target: win.document });
+  pointer("pointerup", 250, "touch");
+  assert.equal($("voice-scene").dataset.state, "processing");
+  await new Promise((r) => setTimeout(r, 880));
+  assert.equal(confirmed.length, 1);
+  assert.equal(input.value, "尚未发送的文字");
+  assert.equal($("voice-scene").dataset.state, "idle");
+  dom.window.close();
+});
+
+test("只有触摸事件时也能启动，上滑取消和系统中断后可再次长按", () => {
+  const { $, dom, touch, clock } = setup();
+  $("message").focus();
+  touch("touchstart");
+  clock.value = 1200;
+  touch("touchmove", { screenY: 420 });
+  assert.equal($("voice-title").textContent, "松手取消");
+  // A second finger ending must not finish the recording finger's gesture.
+  touch("touchend", { id: 2 });
+  assert.equal($("voice-scene").dataset.state, "recording");
+  touch("touchend", { screenY: 420 });
+  assert.equal($("voice-scene").dataset.state, "idle");
+  touch("touchstart");
+  touch("touchcancel");
+  assert.equal($("voice-feedback").hidden, true);
+  touch("touchstart");
+  assert.equal($("voice-scene").dataset.state, "recording");
+  touch("touchcancel");
+  dom.window.close();
+});
+
+test("回答生成期间拒绝语音，不打断当前文字输入", () => {
+  const { $, dom, win, touch } = setup(true, () => false);
+  $("message").focus();
+  touch("touchstart");
+  assert.equal(win.document.activeElement, $("message"));
+  assert.equal($("voice-scene").dataset.state, "idle");
+  dom.window.close();
+});
 test("默认演示不会自动录音，短按不进入免持或转写", () => {
   const { $, win, confirmed, dom, pointer, clock } = setup();
 

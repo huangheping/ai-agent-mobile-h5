@@ -29,6 +29,10 @@ body {
   overflow: hidden;
   overscroll-behavior-x: none;
 }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 body {
   position: fixed;
   inset: 0;
@@ -430,6 +434,13 @@ p {
 }
 .composer textarea::placeholder {
   color: #949e99;
+}
+/* Leave a margin above mobile focus-zoom thresholds without restricting pinch zoom. */
+@media (max-width: 680px), (pointer: coarse) {
+  .composer textarea {
+    font-size: 17px;
+    line-height: 26px;
+  }
 }
 .composer-tools {
   display: flex;

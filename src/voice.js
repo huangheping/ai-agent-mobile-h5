@@ -91,7 +91,7 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   }
 
   function releaseCapture() {
-    if (!gesture) return;
+    if (!gesture || gesture.source !== "pointer") return;
     try {
       control.releasePointerCapture(gesture.id);
     } catch {
@@ -99,10 +99,6 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
     }
   }
 
-  function abortIfPending() {
-    if (!gesture) return;
-    reset("语音输入已中断，本段内容已取消");
-  }
   function reset(message) {
     cleanup();
     elapsed = energy = 0;
@@ -328,14 +324,18 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
       notify("已结束采集；语音转写服务尚未接入，请先使用文字输入。");
     }
   }
-  function press(id, y) {
-    if (gesture || !["idle", "error"].includes(mode)) return;
+  function press(id, y, source = "keyboard") {
+    if (gesture || !["idle", "error"].includes(mode)) return false;
     if (!canOpen()) {
       notify("请先等待回答完成，或停止生成。");
-      return;
+      return false;
     }
-    gesture = { id, y, dy: 0, time: performance.now() };
+    gesture = { id, y, source, dy: 0, time: performance.now() };
+    // Claim the gesture before dismissing the typing keyboard. Do not wait for
+    // its animation or clear the draft; the same hold must start voice input.
+    if (document.activeElement === $("message")) $("message").blur();
     start();
+    return true;
   }
   function move(id, y) {
     if (!gesture || gesture.id !== id) return;
@@ -387,31 +387,57 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   }
 
   control.addEventListener("pointerdown", (event) => {
+    // Touch owns its whole lifecycle below, including WebViews that deliver
+    // touch events without a complete pointer sequence during keyboard changes.
+    if (event.pointerType === "touch") return;
     if (event.button !== 0 || event.isPrimary === false || gesture) return;
     event.preventDefault();
+    if (!press(event.pointerId, event.clientY, "pointer")) return;
     try {
       control.setPointerCapture(event.pointerId);
     } catch {}
-    press(event.pointerId, event.clientY);
   });
-  control.addEventListener("pointermove", (event) =>
-    move(event.pointerId, event.clientY),
-  );
-  control.addEventListener("pointerup", (event) => release(event.pointerId));
+  document.addEventListener("pointermove", (event) => {
+    if (gesture?.source === "pointer") move(event.pointerId, event.clientY);
+  });
   document.addEventListener("pointerup", (event) => {
-    if (gesture && gesture.id === event.pointerId) release(event.pointerId);
+    if (gesture?.source === "pointer") release(event.pointerId);
   });
-  control.addEventListener("pointercancel", () => {
-    if (gesture) reset("语音输入已中断，本段内容已取消");
+  document.addEventListener("pointercancel", (event) => {
+    if (gesture?.source === "pointer" && gesture.id === event.pointerId)
+      reset("语音输入已中断，本段内容已取消");
   });
-  document.addEventListener("pointercancel", abortIfPending);
   // Keep the press on the button: Safari must not drag/open the nested image.
   control.querySelector("img").draggable = false;
   for (const type of ["dragstart", "contextmenu", "selectstart"]) {
     control.addEventListener(type, (event) => event.preventDefault());
   }
-  for (const type of ["touchstart", "touchmove"]) {
-    control.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+  control.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+    if (gesture || event.touches?.length !== 1) return;
+    const touch = event.changedTouches[0];
+    if (touch) press(touch.identifier, touch.screenY, "touch");
+  }, { passive: false });
+  document.addEventListener("touchmove", (event) => {
+    if (control.contains(event.target)) event.preventDefault();
+    if (gesture?.source !== "touch") return;
+    const touch = Array.from(event.changedTouches).find((t) => t.identifier === gesture.id);
+    if (!touch) return;
+    event.preventDefault();
+    // Screen coordinates do not shift when the keyboard changes the viewport.
+    move(touch.identifier, touch.screenY);
+  }, { passive: false });
+  for (const type of ["touchend", "touchcancel"]) {
+    document.addEventListener(type, (event) => {
+      if (gesture?.source !== "touch") return;
+      const touch = Array.from(event.changedTouches).find((t) => t.identifier === gesture.id);
+      if (!touch) return;
+      if (type === "touchcancel") reset("语音输入已中断，本段内容已取消");
+      else {
+        move(touch.identifier, touch.screenY);
+        release(touch.identifier);
+      }
+    });
   }
   control.addEventListener("keydown", (event) => {
     if ([" ", "Enter"].includes(event.key) && !event.repeat) {
@@ -428,11 +454,6 @@ export function initVoice({ canOpen, onConfirm, notify, demoMode = true }) {
   });
   control.addEventListener("click", (event) => {
     event.preventDefault();
-  });
-  document.addEventListener("touchend", (event) => {
-    if (!gesture) return;
-    if (event.target && control.contains(event.target)) return;
-    abortIfPending();
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && ["recording", "permission"].includes(mode))
